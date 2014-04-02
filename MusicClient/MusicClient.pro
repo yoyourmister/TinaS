@@ -13,8 +13,10 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        musicplayer.cpp
+        musicplayer.cpp \
+    virtualfile.cpp
 
-HEADERS  += musicplayer.h
+HEADERS  += musicplayer.h \
+    virtualfile.h
 
 FORMS    += musicplayer.ui

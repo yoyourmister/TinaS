@@ -44,6 +44,19 @@ void MusicServer::sendSound(QString soundName)
 {
 }
 
+void MusicServer::gotData(int ID, QByteArray data)
+{
+    qDebug() << ID << " " << data;
+    if (data=="resync") {
+
+    }
+    for (int i=0; i<threadlist.size(); i++) {
+        if (threadlist.at(i)->socketDescriptor==ID) {
+            threadlist.at(i)->sendData("");
+        }
+    }
+}
+
 
 void MusicServer::incomingConnection(int socketDescriptor)
 {

@@ -10,6 +10,8 @@
 #include <QFileDialog>
 //#include <QMediaPlayer>
 
+#include "virtualfile.h"
+
 namespace Ui {
 class MusicPlayer;
 }
@@ -22,14 +24,20 @@ public:
     explicit MusicPlayer(QWidget *parent = 0);
     ~MusicPlayer();
     
+    bool loadConfigFile();
+    bool saveConfigFile();
     void clientConnect(QString hostname);
-    void addMusicFile();
+    void addMusicFile(QString dir);
+
+    void decode();
+    void startPlaying();
 
 public slots:
     void connected();
     void disconnected();
     void bytesWritten(qint64 bytes);
     void readyRead();
+    void finishedPlaying(QAudio::State state);
 
 private slots:
     void on_but_Mute_clicked();
@@ -42,6 +50,20 @@ private slots:
 
     void on_pushButton_2_clicked();
 
+    void on_but_play_clicked();
+
+    void on_but_resync_clicked();
+
+    void on_but_device_clicked();
+
+    void decodeDone();
+
+    void decodeFinished();
+
+    void on_box_devices_currentIndexChanged(const QString &arg1);
+
+    void on_but_stopDevice_clicked();
+
 private:
     Ui::MusicPlayer *ui;
     QMediaPlayer mediaPlayer;
@@ -50,6 +72,12 @@ private:
     QTcpSocket *socket;
     QString IPaddress;
     QHash<QString,int> hashPlaylist;
+    QString defaultdir;
+
+    VirtualFile *vf;
+    QAudioOutput *audioOutput; // class member.
+    QIODevice *outputFile;
+    QString curDeviceName;
 };
 
 #endif // MUSICPLAYER_H

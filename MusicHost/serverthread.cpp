@@ -1,5 +1,7 @@
 #include "serverthread.h"
 
+#include "musicserver.h"
+
 ServerThread::ServerThread(int ID, QObject *parent) :
     QThread(parent)
 {
@@ -30,6 +32,8 @@ void ServerThread::readyRead()
     QByteArray data=socket->readAll();
 
     qDebug() << "Data in" << socketDescriptor << data;
+    ((MusicServer)(QObject::parent())).gotData(this->socketDescriptor, data);
+    //(parent)->gotData(this->socketDescriptor,data);
 
     //socket->write(data);
 }

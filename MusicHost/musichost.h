@@ -37,6 +37,9 @@ private slots:
 private:
     Ui::MusicHost *ui;
     MusicServer *musicserver;
+    QMediaPlayer mediaPlayer;
+    QMediaPlaylist *globalPlaylist;
+    QMediaPlaylist *currentPlaylist;
 
     void addMusicFiles(QString dir);
 };

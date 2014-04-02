@@ -21,6 +21,7 @@ private:
 signals:
 
 public slots:
+    void gotData(int ID, QByteArray data);
 
 protected:
     void incomingConnection(int socketDescriptor);
