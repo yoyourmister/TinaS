@@ -22,6 +22,7 @@ public slots:
 
 private:
     QTcpSocket *socket;
+public:
     int socketDescriptor;
 
 };

@@ -6,7 +6,6 @@ MusicHost::MusicHost(QWidget *parent) :
     ui(new Ui::MusicHost)
 {
     ui->setupUi(this);
-    mediaPlayer=new QMediaPlayer();
 }
 
 MusicHost::~MusicHost()
