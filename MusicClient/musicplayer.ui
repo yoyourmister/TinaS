@@ -13,19 +13,6 @@
   <property name="windowTitle">
    <string>MusicPlayer</string>
   </property>
-  <widget class="QSlider" name="slider_Playtime">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>230</y>
-     <width>300</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
-   </property>
-  </widget>
   <widget class="QListWidget" name="list_Tracks">
    <property name="geometry">
     <rect>
@@ -232,7 +219,7 @@
     <rect>
      <x>320</x>
      <y>20</y>
-     <width>21</width>
+     <width>24</width>
      <height>201</height>
     </rect>
    </property>
@@ -254,6 +241,38 @@
       </property>
       <property name="orientation">
        <enum>Qt::Vertical</enum>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="horizontalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>230</y>
+     <width>301</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QSlider" name="slider_Playtime">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_Playtime">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="text">
+       <string>00:00</string>
       </property>
      </widget>
     </item>

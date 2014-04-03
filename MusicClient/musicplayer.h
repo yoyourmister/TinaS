@@ -64,7 +64,13 @@ private slots:
 
     void on_but_stopDevice_clicked();
 
+    void updatePlaytime(qint64 position);
+
+    void updateSongDuration(qint64 length);
+
 private:
+    void CreateConnections();
+
     Ui::MusicPlayer *ui;
     QMediaPlayer mediaPlayer;
     QPointer<QAudioDecoder> m_decoder;

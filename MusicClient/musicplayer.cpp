@@ -38,7 +38,7 @@ MusicPlayer::MusicPlayer(QWidget *parent) :
     ui(new Ui::MusicPlayer)
 {
     ui->setupUi(this);
-
+    this->CreateConnections();
     socket=new QTcpSocket(this);
 
     defaultdir="/home";
@@ -51,8 +51,16 @@ MusicPlayer::MusicPlayer(QWidget *parent) :
         qDebug() << "Device name: " << deviceInfo.deviceName() << deviceInfo.supportedCodecs();
     }
     curDeviceName=ui->box_devices->itemText(0);
+}
 
+void MusicPlayer::CreateConnections()
+{
+  if ( ui )
+  {
     connect( ui->but_Mute, SIGNAL(clicked()), this, SLOT(on_but_Mute_toggled()) );
+    connect(&mediaPlayer, SIGNAL(positionChanged(qint64)), this, SLOT(updatePlaytime(qint64)));
+    connect(&mediaPlayer, SIGNAL(durationChanged(qint64)), this, SLOT(updateSongDuration(qint64)));
+  }
 }
 
 MusicPlayer::~MusicPlayer()
@@ -67,6 +75,20 @@ MusicPlayer::~MusicPlayer()
     }*/
     delete socket;
 }
+
+void MusicPlayer::updateSongDuration(qint64 length)
+{
+    ui->slider_Playtime->setRange(0, length);
+}
+
+void MusicPlayer::updatePlaytime(qint64 position)
+{
+    ui->slider_Playtime->setValue(position);
+
+    QTime duration(0, position / 60000, qRound((position % 60000) / 1000.0));
+    ui->label_Playtime->setText(duration.toString(tr("mm:ss")));
+}
+
 
 void MusicPlayer::on_slider_Volume_valueChanged(int value)
 {
