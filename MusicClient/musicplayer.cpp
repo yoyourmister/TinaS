@@ -83,6 +83,7 @@ void MusicPlayer::updateSongDuration(qint64 length)
 
 void MusicPlayer::updatePlaytime(qint64 position)
 {
+    qDebug()<<"Pos"<<position;
     ui->slider_Playtime->setValue(position);
 
     QTime duration(0, position / 60000, qRound((position % 60000) / 1000.0));
@@ -139,7 +140,7 @@ void MusicPlayer::addMusicFile(QString dir)
 {
     QDir directory = QDir(dir);
     //filter for mp3 files only
-    directory.setNameFilters(QStringList()<<"*.mp3");
+    directory.setNameFilters(QStringList()<<"*.mp3"<<"*.mp4");
     QFileInfoList musicDir=directory.entryInfoList(QDir::Dirs);
     QFileInfoList musicFiles=directory.entryInfoList(QDir::Files);
     //QFileInfoList musicDir=QDir("C:/Users/test/Desktop/Musik").entryInfoList(QDir::Dirs);
