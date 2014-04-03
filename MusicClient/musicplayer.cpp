@@ -60,19 +60,13 @@ void MusicPlayer::CreateConnections()
     connect( ui->but_Mute, SIGNAL(clicked()), this, SLOT(on_but_Mute_toggled()) );
     connect(&mediaPlayer, SIGNAL(positionChanged(qint64)), this, SLOT(updatePlaytime(qint64)));
     connect(&mediaPlayer, SIGNAL(durationChanged(qint64)), this, SLOT(updateSongDuration(qint64)));
+    connect(&mediaPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(playerStateChanged(QMediaPlayer::State)));
   }
 }
 
 MusicPlayer::~MusicPlayer()
 {
     delete ui;
-    /*if (playlist)
-    {
-        delete playlist;
-    }
-    if (vf) {
-        delete vf;
-    }*/
     delete socket;
 }
 
@@ -83,21 +77,25 @@ void MusicPlayer::updateSongDuration(qint64 length)
 
 void MusicPlayer::updatePlaytime(qint64 position)
 {
-    qDebug()<<"Pos"<<position;
     ui->slider_Playtime->setValue(position);
 
     QTime duration(0, position / 60000, qRound((position % 60000) / 1000.0));
     ui->label_Playtime->setText(duration.toString(tr("mm:ss")));
 }
 
+void MusicPlayer::playerStateChanged(QMediaPlayer::State state) {
+    qDebug()<<state;
+    if (state==QMediaPlayer::StoppedState) {
+        if (mediaPlayer.playlist()->currentIndex()==-1) {
+            mediaPlayer.playlist()->setCurrentIndex(0);
+        }
+    }
+}
 
 void MusicPlayer::on_slider_Volume_valueChanged(int value)
 {
-    //if (mediaPlayer.state()==QMediaPlayer::PlayingState)
-    //{
-        mediaPlayer.setVolume(value);
-        ui->label_Volume->setText(QString::number(value));
-    //}
+    mediaPlayer.setVolume(value);
+    ui->label_Volume->setText(QString::number(value));
     qDebug()<<mediaPlayer.volume();
 }
 
@@ -123,7 +121,6 @@ void MusicPlayer::clientConnect(QString hostname)
 
     qDebug()<<"Connecting...";
 
-    //socket->connectToHost("google.com",80);
     socket->connectToHost(hostname,7777);
 
     qDebug()<<"waiting...";
@@ -139,25 +136,19 @@ void MusicPlayer::clientConnect(QString hostname)
 void MusicPlayer::addMusicFile(QString dir)
 {
     QDir directory = QDir(dir);
-    //filter for mp3 files only
-    directory.setNameFilters(QStringList()<<"*.mp3"<<"*.mp4");
+    //filter for mp3/mp4 files only
+    directory.setNameFilters(QStringList() << "*.avi" << "*.wav" << "*.mp3" << "*.mp4");
     QFileInfoList musicDir=directory.entryInfoList(QDir::Dirs);
     QFileInfoList musicFiles=directory.entryInfoList(QDir::Files);
-    //QFileInfoList musicDir=QDir("C:/Users/test/Desktop/Musik").entryInfoList(QDir::Dirs);
-    //QFileInfoList musicFiles=QDir("C:/Users/test/Desktop/Musik").entryInfoList(QDir::Files);
 
-    //QFileInfoList musicDir=QDir("G:/Manga/Spiele/(000)NewDownloads/Musik").entryInfoList(QDir::Dirs);
-    //QFileInfoList musicFiles=QDir("G:/Manga/Spiele/(000)NewDownloads/Musik").entryInfoList(QDir::Files);
     for (int i=2; i<musicDir.size(); i++)
     {
-        //qDebug() << musicDir.at(i).absoluteFilePath();
         musicFiles.append(QDir(musicDir.at(i).absoluteFilePath()).entryInfoList(QDir::Files));
     }
     QList<QMediaContent> musicList;
     QMediaContent musicfile;
     for (int i=0; i<musicFiles.size(); i++)
     {
-        //qDebug()<<musicFiles.at(i).absoluteFilePath();
         musicfile=QMediaContent(QUrl::fromLocalFile(musicFiles.at(i).absoluteFilePath()));
         musicList.append(musicfile);
     }
@@ -171,8 +162,6 @@ void MusicPlayer::addMusicFile(QString dir)
         qDebug() << i << " " << filename ;
     }
     mediaPlayer.setPlaylist(playlist);
-    //QString filename=QFileDialog::getOpenFileName(this,"Open Music File");
-    //mediaPlayer.play();
 
     ui->label_error->setText(mediaPlayer.errorString());
 }
@@ -180,8 +169,6 @@ void MusicPlayer::addMusicFile(QString dir)
 void MusicPlayer::connected()
 {
     qDebug()<<"Connected";
-
-    //socket->write("HEAD / HTTP/1.0\r\n\r\n\r\n\r\n");
 }
 
 void MusicPlayer::disconnected()
@@ -202,6 +189,7 @@ void MusicPlayer::readyRead()
     QString readString(readbytes);
     qDebug()<<readbytes;
     ui->label_debug->setText(readbytes);
+
     if (readString.left(4)=="play")
     {
         QString title=readString.mid(4);
@@ -216,6 +204,7 @@ void MusicPlayer::readyRead()
         }
         mediaPlayer.play();
     }
+
     if (readString.left(4)=="list") {
         QString list=readString.mid(4);
         QStringList titles=list.split(":");
@@ -235,6 +224,7 @@ void MusicPlayer::readyRead()
         mediaPlayer.setPlaylist(currentPlaylist);
         mediaPlayer.play();
     }
+
     if (readString.left(4)=="sync") {
         QStringList properties=readString.mid(4).split(":");
         mediaPlayer.playlist()->setCurrentIndex(properties.at(0).toInt());
@@ -265,12 +255,11 @@ void MusicPlayer::on_pushButton_2_clicked()
 {
     mediaPlayer.playlist()->next();
     qDebug()<<(mediaPlayer.playlist()->currentIndex());
-    //playlist->mediaInserted();
 }
 
 void MusicPlayer::on_but_play_clicked()
 {
-    qDebug()<<mediaPlayer.isAudioAvailable();
+    qDebug()<<"Audio avail.: "<<mediaPlayer.isAudioAvailable();
     if (mediaPlayer.state()==QMediaPlayer::PlayingState) {
         mediaPlayer.stop();
         ui->but_play->setText("Play");
@@ -297,12 +286,6 @@ QAudioFormat format;
 
 void MusicPlayer::decodeFinished() {
     qDebug()<<"Finished";
-    for (int i=0; i<arrCnt; ++i) {
-        //outputFile->write(static_cast<const char*>(m_arr[i].data()),m_arr[i].byteCount());
-        //vf->writeData(static_cast<const char*>(m_arr[i].data()),m_arr[i].byteCount());
-    }
-    qDebug()<<"Finished writing";
-    //audioOutput->start(vf);
 }
 
 void MusicPlayer::decodeDone() {
@@ -322,11 +305,10 @@ void MusicPlayer::decode()
     qDebug()<<"start decode";
     m_decoder=new QAudioDecoder();
 
-    //decoder->setAudioFormat(format);
     connect(m_decoder,SIGNAL(bufferReady()),this,SLOT(decodeDone()));
     connect(m_decoder,SIGNAL(finished()),this,SLOT(decodeFinished()));
     //decoder->setSourceFilename("J:/Musik/Snap - Oops Up.mp3");
-    QString musicfile=QDir::currentPath()+"/Erdenstern - Snow Queen.mp3";//"/Snap - Oops Up.mp3";//
+    QString musicfile=QDir::currentPath()+"/Erdenstern - Snow Queen.mp3";  //"/Snap - Oops Up.mp3";//
     qDebug()<<musicfile;
     m_decoder->setSourceFilename(musicfile);
     m_decoder->start();
@@ -336,6 +318,7 @@ void MusicPlayer::decode()
 void MusicPlayer::finishedPlaying(QAudio::State state)
 {
     if (state == QAudio::IdleState) {
+        qDebug()<<"Finished Playing";
         audioOutput->stop();
         vf->close();
         delete audioOutput;
@@ -367,12 +350,10 @@ void MusicPlayer::startPlaying()
             qDebug()<<deviceInfo.deviceName();
             audioOutput = new QAudioOutput(deviceInfo,format,this);
         }
-        //qDebug() << "Device name: " << deviceInfo.deviceName() << deviceInfo.supportedCodecs();
     }
-    //audioOutput = new QAudioOutput(QAudioDeviceInfo::defaultOutputDevice(),format,this);
+
     connect(audioOutput,SIGNAL(stateChanged(QAudio::State)),this,SLOT(finishedPlaying(QAudio::State)));
     vf->start();
-    //outputFile=audioOutput->start();
     qDebug()<<"output started";
 }
 
@@ -403,7 +384,6 @@ void MusicPlayer::on_but_stopDevice_clicked()
     delete audioOutput;
     delete vf;
     arrCnt=0;
-    //vf->clear();
     ui->but_stopDevice->setEnabled(false);
     ui->but_device->setEnabled(true);
     ui->box_devices->setEnabled(true);

@@ -68,6 +68,8 @@ private slots:
 
     void updateSongDuration(qint64 length);
 
+    void playerStateChanged(QMediaPlayer::State state);
+
 private:
     void CreateConnections();
 
@@ -83,7 +85,6 @@ private:
 
     QPointer<VirtualFile> vf;
     QPointer<QAudioOutput> audioOutput; // class member.
-    QIODevice *outputFile;
     QString curDeviceName;
 };
 
