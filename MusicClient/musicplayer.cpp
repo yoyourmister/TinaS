@@ -137,8 +137,11 @@ void MusicPlayer::clientConnect(QString hostname)
 
 void MusicPlayer::addMusicFile(QString dir)
 {
-    QFileInfoList musicDir=QDir(dir).entryInfoList(QDir::Dirs);
-    QFileInfoList musicFiles=QDir(dir).entryInfoList(QDir::Files);
+    QDir directory = QDir(dir);
+    //filter for mp3 files only
+    directory.setNameFilters(QStringList()<<"*.mp3");
+    QFileInfoList musicDir=directory.entryInfoList(QDir::Dirs);
+    QFileInfoList musicFiles=directory.entryInfoList(QDir::Files);
     //QFileInfoList musicDir=QDir("C:/Users/test/Desktop/Musik").entryInfoList(QDir::Dirs);
     //QFileInfoList musicFiles=QDir("C:/Users/test/Desktop/Musik").entryInfoList(QDir::Files);
 
