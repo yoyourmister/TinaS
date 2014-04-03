@@ -67,7 +67,7 @@ private slots:
 private:
     Ui::MusicPlayer *ui;
     QMediaPlayer mediaPlayer;
-    QAudioDecoder *m_decoder;
+    QPointer<QAudioDecoder> m_decoder;
     QMediaPlaylist *playlist;
     QMediaPlaylist *currentPlaylist;
     QTcpSocket *socket;
@@ -75,8 +75,8 @@ private:
     QHash<QString,int> hashPlaylist;
     QString defaultdir;
 
-    VirtualFile *vf;
-    QAudioOutput *audioOutput; // class member.
+    QPointer<VirtualFile> vf;
+    QPointer<QAudioOutput> audioOutput; // class member.
     QIODevice *outputFile;
     QString curDeviceName;
 };

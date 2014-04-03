@@ -73,6 +73,7 @@ void MusicPlayer::on_slider_Volume_valueChanged(int value)
     //if (mediaPlayer.state()==QMediaPlayer::PlayingState)
     //{
         mediaPlayer.setVolume(value);
+        ui->label_Volume->setText(QString::number(value));
     //}
     qDebug()<<mediaPlayer.volume();
 }
@@ -296,8 +297,8 @@ void MusicPlayer::decode()
     m_decoder=new QAudioDecoder();
 
     //decoder->setAudioFormat(format);
-    connect(m_decoder,SIGNAL(bufferReady()),SLOT(decodeDone()));
-    connect(m_decoder,SIGNAL(finished()),SLOT(decodeFinished()));
+    connect(m_decoder,SIGNAL(bufferReady()),this,SLOT(decodeDone()));
+    connect(m_decoder,SIGNAL(finished()),this,SLOT(decodeFinished()));
     //decoder->setSourceFilename("J:/Musik/Snap - Oops Up.mp3");
     QString musicfile=QDir::currentPath()+"/Erdenstern - Snow Queen.mp3";//"/Snap - Oops Up.mp3";//
     qDebug()<<musicfile;
@@ -343,7 +344,7 @@ void MusicPlayer::startPlaying()
         //qDebug() << "Device name: " << deviceInfo.deviceName() << deviceInfo.supportedCodecs();
     }
     //audioOutput = new QAudioOutput(QAudioDeviceInfo::defaultOutputDevice(),format,this);
-    connect(audioOutput,SIGNAL(stateChanged(QAudio::State)),SLOT(finishedPlaying(QAudio::State)));
+    connect(audioOutput,SIGNAL(stateChanged(QAudio::State)),this,SLOT(finishedPlaying(QAudio::State)));
     vf->start();
     //outputFile=audioOutput->start();
     qDebug()<<"output started";
@@ -370,9 +371,6 @@ void MusicPlayer::on_but_stopDevice_clicked()
 {
     m_decoder->stop();
     qDebug()<<"decode stopped";
-    //disconnect decoder signals
-    disconnect(m_decoder,SIGNAL(bufferReady()),this,SLOT(decodeDone()));
-    disconnect(m_decoder,SIGNAL(finished()),this,SLOT(decodeFinished()));
     audioOutput->stop();
     vf->stop();
     delete m_decoder;
