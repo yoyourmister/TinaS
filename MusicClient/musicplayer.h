@@ -40,7 +40,7 @@ public slots:
     void finishedPlaying(QAudio::State state);
 
 private slots:
-    void on_but_Mute_clicked();
+    void on_but_Mute_toggled();
 
     void on_but_connect_clicked();
 
@@ -67,6 +67,7 @@ private slots:
 private:
     Ui::MusicPlayer *ui;
     QMediaPlayer mediaPlayer;
+    QAudioDecoder *m_decoder;
     QMediaPlaylist *playlist;
     QMediaPlaylist *currentPlaylist;
     QTcpSocket *socket;

@@ -51,6 +51,8 @@ MusicPlayer::MusicPlayer(QWidget *parent) :
         qDebug() << "Device name: " << deviceInfo.deviceName() << deviceInfo.supportedCodecs();
     }
     curDeviceName=ui->box_devices->itemText(0);
+
+    connect( ui->but_Mute, SIGNAL(clicked()), this, SLOT(on_but_Mute_toggled()) );
 }
 
 MusicPlayer::~MusicPlayer()
@@ -75,15 +77,15 @@ void MusicPlayer::on_slider_Volume_valueChanged(int value)
     qDebug()<<mediaPlayer.volume();
 }
 
-void MusicPlayer::on_but_Mute_clicked()
+void MusicPlayer::on_but_Mute_toggled()
 {
-    if (mediaPlayer.isMuted())
+    if (ui->but_Mute->isChecked())
     {
-        mediaPlayer.setMuted(false);
+        mediaPlayer.setMuted(true);
     }
     else
     {
-        mediaPlayer.setMuted(true);
+        mediaPlayer.setMuted(false);
     }
     qDebug() << "Mute" << mediaPlayer.isMuted();
 }
@@ -245,7 +247,7 @@ void MusicPlayer::on_but_play_clicked()
     if (mediaPlayer.state()==QMediaPlayer::PlayingState) {
         mediaPlayer.stop();
         ui->but_play->setText("Play");
-    } else if (mediaPlayer.state()==QMediaPlayer::StoppedState) {
+    } else if (mediaPlayer.state()==QMediaPlayer::StoppedState && mediaPlayer.isAudioAvailable()) {
         mediaPlayer.play();
         ui->but_play->setText("Stop");
     }
@@ -258,7 +260,7 @@ void MusicPlayer::on_but_resync_clicked()
 
 
 
-QAudioDecoder *decoder;
+//QAudioDecoder *decoder;
 QAudioOutput *audioOutput;
 QAudioBuffer m_arr[1000];
 
@@ -278,9 +280,9 @@ void MusicPlayer::decodeFinished() {
 
 void MusicPlayer::decodeDone() {
     qDebug()<<"done"<<arrCnt;
-    QAudioFormat qaf=decoder->audioFormat();
+    QAudioFormat qaf=m_decoder->audioFormat();
     qDebug()<<qaf.channelCount() << qaf.codec() << qaf.sampleRate() << qaf.sampleSize() << qaf.byteOrder() << qaf.sampleType();
-    m_arr[arrCnt]=decoder->read();
+    m_arr[arrCnt]=m_decoder->read();
     vf->writeData(static_cast<const char*>(m_arr[arrCnt].data()),m_arr[arrCnt].byteCount());
     if (arrCnt==0) {
         audioOutput->start(vf);
@@ -291,15 +293,16 @@ void MusicPlayer::decodeDone() {
 void MusicPlayer::decode()
 {
     qDebug()<<"start decode";
-    decoder=new QAudioDecoder();
+    m_decoder=new QAudioDecoder();
+
     //decoder->setAudioFormat(format);
-    connect(decoder,SIGNAL(bufferReady()),SLOT(decodeDone()));
-    connect(decoder,SIGNAL(finished()),SLOT(decodeFinished()));
+    connect(m_decoder,SIGNAL(bufferReady()),SLOT(decodeDone()));
+    connect(m_decoder,SIGNAL(finished()),SLOT(decodeFinished()));
     //decoder->setSourceFilename("J:/Musik/Snap - Oops Up.mp3");
     QString musicfile=QDir::currentPath()+"/Erdenstern - Snow Queen.mp3";//"/Snap - Oops Up.mp3";//
     qDebug()<<musicfile;
-    decoder->setSourceFilename(musicfile);
-    decoder->start();
+    m_decoder->setSourceFilename(musicfile);
+    m_decoder->start();
     qDebug()<<"decode started";
 }
 
@@ -351,6 +354,9 @@ void MusicPlayer::on_but_device_clicked()
 {
     startPlaying();
     decode();
+    ui->but_stopDevice->setEnabled(true);
+    ui->but_device->setEnabled(false);
+    ui->box_devices->setEnabled(false);
 }
 
 
@@ -362,12 +368,19 @@ void MusicPlayer::on_box_devices_currentIndexChanged(const QString &arg1)
 
 void MusicPlayer::on_but_stopDevice_clicked()
 {
-    decoder->stop();
-    delete decoder;
+    m_decoder->stop();
+    qDebug()<<"decode stopped";
+    //disconnect decoder signals
+    disconnect(m_decoder,SIGNAL(bufferReady()),this,SLOT(decodeDone()));
+    disconnect(m_decoder,SIGNAL(finished()),this,SLOT(decodeFinished()));
     audioOutput->stop();
-    delete audioOutput;
     vf->stop();
+    delete m_decoder;
+    delete audioOutput;
     delete vf;
     arrCnt=0;
     //vf->clear();
+    ui->but_stopDevice->setEnabled(false);
+    ui->but_device->setEnabled(true);
+    ui->box_devices->setEnabled(true);
 }
