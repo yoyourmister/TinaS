@@ -34,6 +34,8 @@ private slots:
 
     void on_but_addToList_clicked();
 
+    void on_but_removeFromList_clicked();
+
     void on_listWidget_playlist_itemDoubleClicked(QListWidgetItem *item);
 
     void assignIP(QNetworkReply *reply);

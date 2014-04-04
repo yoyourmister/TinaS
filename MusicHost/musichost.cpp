@@ -67,7 +67,7 @@ void MusicHost::assignIP(QNetworkReply *reply)
     }
     else
     {
-        QMessageBox::warning(this, "Error", "Could not get your external IP address from http://whatismyip.org/");
+        QMessageBox::warning(this, "Error", "Could not get your external IP address from http://icanhazip.com/");
     }
     reply->deleteLater();
 }
@@ -135,6 +135,14 @@ void MusicHost::on_but_addToList_clicked()
     QList<QListWidgetItem*> list=ui->listWidget_allSongs->selectedItems();
     for (int i=0; i<list.size(); ++i) {
         ui->listWidget_playlist->addItem(list.at(i)->text());
+    }
+}
+
+void MusicHost::on_but_removeFromList_clicked()
+{
+    QList<QListWidgetItem*> list=ui->listWidget_playlist->selectedItems();
+    for (int i=0; i<list.size(); ++i) {
+        ui->listWidget_playlist->takeItem(i);
     }
 }
 
