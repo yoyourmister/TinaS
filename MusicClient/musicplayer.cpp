@@ -73,6 +73,8 @@ MusicPlayer::~MusicPlayer()
 void MusicPlayer::updateSongDuration(qint64 length)
 {
     ui->slider_Playtime->setRange(0, length);
+    QTime duration(0, length / 60000, qRound((length % 60000) / 1000.0));
+    ui->label_Duration->setText(duration.toString(tr("mm:ss")));
 }
 
 void MusicPlayer::updatePlaytime(qint64 position)
