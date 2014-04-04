@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>459</width>
-    <height>430</height>
+    <height>441</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -172,15 +172,15 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_CurIP">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+        <widget class="QLineEdit" name="lineEdit_CurIP">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Click get IP address&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
-         <property name="text">
-          <string>-</string>
+         <property name="maxLength">
+          <number>32</number>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -189,7 +189,7 @@
      <item row="0" column="1">
       <widget class="QPushButton" name="but_getIP">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;get current IP address&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;get current IP address and copy to clipboard&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>get IP</string>

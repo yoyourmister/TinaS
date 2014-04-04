@@ -23,9 +23,12 @@ void MusicHost::on_but_getIP_clicked()
 {
     foreach (const QHostAddress &address, QNetworkInterface::allAddresses()) {
         if (address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress(QHostAddress::LocalHost))
-            ui->label_CurIP->setText(address.toString());
+            ui->lineEdit_CurIP->setText(address.toString());
             qDebug() << address.toString();
     }
+    ui->lineEdit_CurIP->selectAll();
+    //ui->lineEdit_CurIP->copy();
+    ui->lineEdit_CurIP->setFocus();
 }
 
 void MusicHost::on_but_sendList_clicked()
