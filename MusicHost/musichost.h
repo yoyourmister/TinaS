@@ -24,6 +24,8 @@ public:
 private slots:
     void on_but_host_clicked();
 
+    void on_but_getIP_clicked();
+
     void on_but_sendList_clicked();
 
     void on_but_sendSound_clicked();

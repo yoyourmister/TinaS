@@ -19,6 +19,15 @@ void MusicHost::on_but_host_clicked()
     musicserver->startServer();
 }
 
+void MusicHost::on_but_getIP_clicked()
+{
+    foreach (const QHostAddress &address, QNetworkInterface::allAddresses()) {
+        if (address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress(QHostAddress::LocalHost))
+            ui->label_CurIP->setText(address.toString());
+            qDebug() << address.toString();
+    }
+}
+
 void MusicHost::on_but_sendList_clicked()
 {
     QList<QString> list;
