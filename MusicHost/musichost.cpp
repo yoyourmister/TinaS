@@ -1,5 +1,6 @@
 #include "musichost.h"
 #include "ui_musichost.h"
+#include "QMessageBox.h"
 
 MusicHost::MusicHost(QWidget *parent) :
     QWidget(parent),
@@ -21,14 +22,54 @@ void MusicHost::on_but_host_clicked()
 
 void MusicHost::on_but_getIP_clicked()
 {
-    foreach (const QHostAddress &address, QNetworkInterface::allAddresses()) {
-        if (address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress(QHostAddress::LocalHost))
-            ui->lineEdit_CurIP->setText(address.toString());
-            qDebug() << address.toString();
+
+    //get the external ip over
+    QNetworkAccessManager *accessManager = new QNetworkAccessManager();
+    accessManager->get(QNetworkRequest(QUrl("http://icanhazip.com/")));
+    connect(accessManager, SIGNAL(finished(QNetworkReply*)), SLOT(assignIP(QNetworkReply*)));
+
+    //QHostAddress address = this->getLocalIP();
+//    qDebug() << address.toString();
+//    if (!address.isNull())
+//    {
+//        ui->lineEdit_CurIP->setText(address.toString());
+//        //select complete IP address in lineEditField
+//        ui->lineEdit_CurIP->selectAll();
+//        //copy address to clipboard
+//        ui->lineEdit_CurIP->copy();
+//        //set the focus to the lineEditField
+//        ui->lineEdit_CurIP->setFocus();
+//    }
+}
+
+//QHostAddress MusicHost::getLocalIP()
+//{
+//    QHostAddress localAddress;
+//    foreach (const QHostAddress &address, QNetworkInterface::allAddresses()) {
+//        if (address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress(QHostAddress::LocalHost))
+//            localAddress = address;
+
+//    }
+//    return localAddress;
+//}
+
+void MusicHost::assignIP(QNetworkReply *reply)
+{
+    if(reply->error() == QNetworkReply::NoError)
+    {
+        ui->lineEdit_CurIP->setText(reply->readAll());
+        //select complete IP address in lineEditField
+        ui->lineEdit_CurIP->selectAll();
+        //copy address to clipboard
+        ui->lineEdit_CurIP->copy();
+        //set the focus to the lineEditField
+        ui->lineEdit_CurIP->setFocus();
     }
-    ui->lineEdit_CurIP->selectAll();
-    //ui->lineEdit_CurIP->copy();
-    ui->lineEdit_CurIP->setFocus();
+    else
+    {
+        QMessageBox::warning(this, "Error", "Could not get your external IP address from http://whatismyip.org/");
+    }
+    reply->deleteLater();
 }
 
 void MusicHost::on_but_sendList_clicked()

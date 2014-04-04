@@ -36,7 +36,11 @@ private slots:
 
     void on_listWidget_playlist_itemDoubleClicked(QListWidgetItem *item);
 
+    void assignIP(QNetworkReply *reply);
+
 private:
+    //QHostAddress getLocalIP();
+
     Ui::MusicHost *ui;
     MusicServer *musicserver;
     QMediaPlayer mediaPlayer;
