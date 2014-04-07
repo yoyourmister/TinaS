@@ -51,16 +51,23 @@ MusicPlayer::MusicPlayer(QWidget *parent) :
         qDebug() << "Device name: " << deviceInfo.deviceName() << deviceInfo.supportedCodecs();
     }
     curDeviceName=ui->box_devices->itemText(0);
+    //set global flag for host connection (is client connected to host?)
+    isConnected = false;
 }
 
 void MusicPlayer::CreateConnections()
 {
   if ( ui )
   {
+    //general playback controls (always active)
     connect( ui->but_Mute, SIGNAL(clicked()), this, SLOT(on_but_Mute_toggled()) );
+    //plackback info update
     connect(&mediaPlayer, SIGNAL(positionChanged(qint64)), this, SLOT(updatePlaytime(qint64)));
     connect(&mediaPlayer, SIGNAL(durationChanged(qint64)), this, SLOT(updateSongDuration(qint64)));
     connect(&mediaPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(playerStateChanged(QMediaPlayer::State)));
+    //user control of playback
+    connect(ui->list_Tracks, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(on_track_doubleclicked(QModelIndex)));
+    //connect(ui->slider_Playtime, SIGNAL(sliderMoved(int)), this, SLOT(on_trackPositionChanged(sliderMoved(int))));
   }
 }
 
@@ -86,6 +93,12 @@ void MusicPlayer::updatePlaytime(qint64 position)
     ui->label_Playtime->setText(duration.toString(tr("mm:ss")));
 }
 
+//void MusicPlayer::on_trackPositionChanged(int position)
+//{
+//    if(mediaPlayer.state()==QMediaPlayer::PlayingState)
+//        ui->slider_Playtime->setValue(position);
+//}
+
 void MusicPlayer::playerStateChanged(QMediaPlayer::State state) {
     qDebug()<<state;
     if (state==QMediaPlayer::StoppedState) {
@@ -93,6 +106,14 @@ void MusicPlayer::playerStateChanged(QMediaPlayer::State state) {
             mediaPlayer.playlist()->setCurrentIndex(0);
         }
     }
+}
+
+void MusicPlayer::on_track_doubleclicked(QModelIndex index)
+{
+    mediaPlayer.stop();
+    playlist->setCurrentIndex(index.row());
+    mediaPlayer.play();
+    ui->but_play->setText("Pause");
 }
 
 void MusicPlayer::on_slider_Volume_valueChanged(int value)
@@ -132,7 +153,7 @@ void MusicPlayer::clientConnect(QString hostname)
     {
         qDebug()<<"Error:"<< socket->errorString();
     }
-    qDebug()<<"established";
+    //qDebug()<<"established";
 }
 
 
@@ -172,11 +193,27 @@ void MusicPlayer::addMusicFile(QString dir)
 void MusicPlayer::connected()
 {
     qDebug()<<"Connected";
+    //set global flag for host connection
+    isConnected = true;
+    qDebug()<<"isConnected=" << isConnected;
+    //deactivate every GUI element for client playback control
+    ui->but_play->setEnabled(false);
+    ui->but_stop->setEnabled(false);
+    ui->list_Tracks->setEnabled(false);
+    ui->but_connect->setText("Disconnect");
 }
 
 void MusicPlayer::disconnected()
 {
     qDebug()<<"Disconnected";
+    //unset global flag for host connection
+    isConnected = false;
+    qDebug()<<"isConnected=" << isConnected;
+    //activate every GUI element for client playback control
+    ui->but_play->setEnabled(true);
+    ui->but_stop->setEnabled(true);
+    ui->list_Tracks->setEnabled(true);
+    ui->but_connect->setText("Connect");
 }
 
 void MusicPlayer::bytesWritten(qint64 bytes)
@@ -239,8 +276,14 @@ void MusicPlayer::readyRead()
 
 void MusicPlayer::on_but_connect_clicked()
 {
-    IPaddress=ui->editIP->text();
-    clientConnect(IPaddress);
+    if (isConnected) {
+        socket->disconnectFromHost();
+
+    } else
+    {
+        IPaddress=ui->editIP->text();
+        clientConnect(IPaddress);
+    }
 }
 
 void MusicPlayer::on_pushButton_clicked()
@@ -264,12 +307,29 @@ void MusicPlayer::on_but_play_clicked()
 {
     qDebug()<<"Audio avail.: "<<mediaPlayer.isAudioAvailable();
     if (mediaPlayer.state()==QMediaPlayer::PlayingState) {
-        mediaPlayer.stop();
+        mediaPlayer.pause();
         ui->but_play->setText("Play");
-    } else if (mediaPlayer.state()==QMediaPlayer::StoppedState && mediaPlayer.isAudioAvailable()) {
+    } else if (mediaPlayer.state()==QMediaPlayer::StoppedState && mediaPlayer.isAudioAvailable())
+    {
+        //the currently selected item will be played next
+        int index = ui->list_Tracks->currentIndex().row();
+        //if nothing is selected first track is played
+        if (index<0) index = 0;
+        playlist->setCurrentIndex(index);
         mediaPlayer.play();
-        ui->but_play->setText("Stop");
+        ui->but_play->setText("Pause");
+    } else if (mediaPlayer.state()==QMediaPlayer::PausedState && mediaPlayer.isAudioAvailable())
+    {
+        //player is paused and should now play from last position
+        mediaPlayer.play();
+        ui->but_play->setText("Pause");
     }
+}
+
+void MusicPlayer::on_but_stop_clicked()
+{
+    mediaPlayer.stop();
+    ui->but_play->setText("Play");
 }
 
 void MusicPlayer::on_but_resync_clicked()
