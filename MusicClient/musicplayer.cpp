@@ -101,14 +101,6 @@ void MusicPlayer::updatePlaytime(qint64 position)
 
 void MusicPlayer::playerStateChanged(QMediaPlayer::State state) {
     qDebug()<<state;
-
-    /*if (state==QMediaPlayer::StoppedState) {
-        if (mediaPlayer.playlist()->currentIndex()==-1) {
-            if (mediaPlayer.playlist()->mediaCount()>0) {
-                mediaPlayer.playlist()->setCurrentIndex(0);
-            }
-        }
-    }*/
 }
 
 void MusicPlayer::on_track_doubleclicked(QModelIndex index)
