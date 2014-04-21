@@ -65,6 +65,7 @@ void MusicPlayer::CreateConnections()
     connect(&mediaPlayer, SIGNAL(positionChanged(qint64)), this, SLOT(updatePlaytime(qint64)));
     connect(&mediaPlayer, SIGNAL(durationChanged(qint64)), this, SLOT(updateSongDuration(qint64)));
     connect(&mediaPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(playerStateChanged(QMediaPlayer::State)));
+    connect(&playlist, SIGNAL(currentIndexChanged(int)), this, SLOT(playlistIndexChanged(int)));
     //user control of playback
     connect(ui->list_Tracks, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(on_track_doubleclicked(QModelIndex)));
     //connect(ui->slider_Playtime, SIGNAL(sliderMoved(int)), this, SLOT(on_trackPositionChanged(sliderMoved(int))));
@@ -75,6 +76,14 @@ MusicPlayer::~MusicPlayer()
 {
     delete ui;
     delete socket;
+}
+
+void MusicPlayer::playlistIndexChanged(int index)
+{
+    //if (ui->list_Tracks->currentRow()!=-1)
+    //    ui->list_Tracks->currentItem()->setTextColor(QColor("black"));
+    ui->list_Tracks->setCurrentRow(index);
+    //ui->list_Tracks->currentItem()->setTextColor(QColor("green"));
 }
 
 void MusicPlayer::updateSongDuration(qint64 length)
@@ -111,7 +120,9 @@ void MusicPlayer::playerStateChanged(QMediaPlayer::State state) {
 void MusicPlayer::on_track_doubleclicked(QModelIndex index)
 {
     mediaPlayer.stop();
-    playlist->setCurrentIndex(index.row());
+    //if (playlist.currentIndex()!=1)
+    //    ui->list_Tracks->item(playlist.currentIndex())->setTextColor(QColor("black"));
+    playlist.setCurrentIndex(index.row());
     mediaPlayer.play();
     ui->but_play->setText("Pause");
 }
@@ -176,16 +187,16 @@ void MusicPlayer::addMusicFile(QString dir)
         musicfile=QMediaContent(QUrl::fromLocalFile(musicFiles.at(i).absoluteFilePath()));
         musicList.append(musicfile);
     }
-    playlist=new QMediaPlaylist();
-    playlist->addMedia(musicList);
-    for (int i=0; i<playlist->mediaCount(); i++)
+    playlist.clear();
+    playlist.addMedia(musicList);
+    for (int i=0; i<playlist.mediaCount(); i++)
     {
-        QString filename=playlist->media(i).canonicalUrl().toString();
+        QString filename=playlist.media(i).canonicalUrl().toString();
         filename=filename.mid(filename.lastIndexOf("/")+1);
         ui->list_Tracks->addItem(filename);
         qDebug() << i << " " << filename ;
     }
-    mediaPlayer.setPlaylist(playlist);
+    mediaPlayer.setPlaylist(&playlist);
 
     ui->label_error->setText(mediaPlayer.errorString());
 }
@@ -200,6 +211,7 @@ void MusicPlayer::connected()
     ui->but_play->setEnabled(false);
     ui->but_stop->setEnabled(false);
     ui->list_Tracks->setEnabled(false);
+    ui->but_addFolder->setEnabled(false);
     ui->but_connect->setText("Disconnect");
 }
 
@@ -213,6 +225,7 @@ void MusicPlayer::disconnected()
     ui->but_play->setEnabled(true);
     ui->but_stop->setEnabled(true);
     ui->list_Tracks->setEnabled(true);
+    ui->but_addFolder->setEnabled(true);
     ui->but_connect->setText("Connect");
 }
 
@@ -249,15 +262,15 @@ void MusicPlayer::readyRead()
         QString list=readString.mid(4);
         QStringList titles=list.split(":");
         currentPlaylist=new QMediaPlaylist();
-        for (int i=0; i<playlist->mediaCount(); i++)
+        for (int i=0; i<playlist.mediaCount(); i++)
         {
-            QString filename=playlist->media(i).canonicalUrl().toString();
+            QString filename=playlist.media(i).canonicalUrl().toString();
             filename=filename.mid(filename.lastIndexOf("/")+1);
             qDebug()<<filename;
             for (int j=0; j<titles.size(); ++j) {
                 qDebug()<<titles.at(j);
                 if (filename==titles.at(j)) {
-                    currentPlaylist->addMedia(playlist->media(i));
+                    currentPlaylist->addMedia(playlist.media(i));
                 }
             }
         }
@@ -286,7 +299,7 @@ void MusicPlayer::on_but_connect_clicked()
     }
 }
 
-void MusicPlayer::on_pushButton_clicked()
+void MusicPlayer::on_but_addFolder_clicked()
 {
     QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),defaultdir, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     qDebug()<<dir;
@@ -297,10 +310,13 @@ void MusicPlayer::on_pushButton_clicked()
     }
 }
 
-void MusicPlayer::on_pushButton_2_clicked()
+void MusicPlayer::on_but_next_clicked()
 {
-    mediaPlayer.playlist()->next();
-    qDebug()<<(mediaPlayer.playlist()->currentIndex());
+    if (mediaPlayer.playlist())
+    {
+        mediaPlayer.playlist()->next();
+        qDebug()<<(mediaPlayer.playlist()->currentIndex());
+    }
 }
 
 void MusicPlayer::on_but_play_clicked()
@@ -315,7 +331,7 @@ void MusicPlayer::on_but_play_clicked()
         int index = ui->list_Tracks->currentIndex().row();
         //if nothing is selected first track is played
         if (index<0) index = 0;
-        playlist->setCurrentIndex(index);
+        playlist.setCurrentIndex(index);
         mediaPlayer.play();
         ui->but_play->setText("Pause");
     } else if (mediaPlayer.state()==QMediaPlayer::PausedState && mediaPlayer.isAudioAvailable())

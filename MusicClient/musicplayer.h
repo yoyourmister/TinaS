@@ -42,9 +42,7 @@ public slots:
 private slots:
     void on_but_connect_clicked();
 
-    void on_pushButton_clicked();
-
-    void on_pushButton_2_clicked();
+    void on_but_addFolder_clicked();
 
     void on_but_resync_clicked();
 
@@ -62,12 +60,14 @@ private slots:
     void on_but_play_clicked();
     void on_track_doubleclicked(QModelIndex index);
     void on_but_stop_clicked();
+    void on_but_next_clicked();
     //void on_trackPositionChanged(int position);
 
     //plackback info update
     void updatePlaytime(qint64 position);
     void updateSongDuration(qint64 length);
     void playerStateChanged(QMediaPlayer::State state);
+    void playlistIndexChanged(int index);
 
     //general playback
     void on_but_Mute_toggled();
@@ -79,7 +79,7 @@ private:
     Ui::MusicPlayer *ui;
     QMediaPlayer mediaPlayer;
     QPointer<QAudioDecoder> m_decoder;
-    QMediaPlaylist *playlist;
+    QMediaPlaylist playlist;
     QMediaPlaylist *currentPlaylist;
     QTcpSocket *socket;
     QString IPaddress;
