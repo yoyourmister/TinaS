@@ -80,10 +80,10 @@ MusicPlayer::~MusicPlayer()
 
 void MusicPlayer::playlistIndexChanged(int index)
 {
-    //if (ui->list_Tracks->currentRow()!=-1)
-    //    ui->list_Tracks->currentItem()->setTextColor(QColor("black"));
+    if (ui->list_Tracks->currentRow()!=-1)
+        ui->list_Tracks->currentItem()->setTextColor(QColor("black"));
     ui->list_Tracks->setCurrentRow(index);
-    //ui->list_Tracks->currentItem()->setTextColor(QColor("green"));
+    ui->list_Tracks->currentItem()->setTextColor(QColor("green"));
 }
 
 void MusicPlayer::updateSongDuration(qint64 length)
@@ -114,9 +114,10 @@ void MusicPlayer::playerStateChanged(QMediaPlayer::State state) {
 
 void MusicPlayer::on_track_doubleclicked(QModelIndex index)
 {
+    int curIndex = playlist.currentIndex();
     mediaPlayer.stop();
-    //if (playlist.currentIndex()!=1)
-    //    ui->list_Tracks->item(playlist.currentIndex())->setTextColor(QColor("black"));
+    if (curIndex != -1 && curIndex!=index.row())
+        ui->list_Tracks->item(curIndex)->setTextColor(QColor("black"));
     playlist.setCurrentIndex(index.row());
     mediaPlayer.play();
     ui->but_play->setText("Pause");
@@ -183,7 +184,7 @@ void MusicPlayer::addMusicFile(QString dir)
         musicList.append(musicfile);
     }
     playlist.clear();
-    playlist->setPlaybackMode(QMediaPlaylist::Loop);
+    playlist.setPlaybackMode(QMediaPlaylist::Loop);
     playlist.addMedia(musicList);
     for (int i=0; i<playlist.mediaCount(); i++)
     {
