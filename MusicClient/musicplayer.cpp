@@ -168,14 +168,18 @@ void MusicPlayer::addMusicFile(QString dir)
 {
     QDir directory = QDir(dir);
     //filter for mp3/mp4 files only
-    directory.setNameFilters(QStringList() << "*.avi" << "*.wav" << "*.mp3" << "*.mp4");
+    //directory.setNameFilters(QStringList() << "*.avi" << "*.wav" << "*.mp3" << "*.mp4");
     QFileInfoList musicDir=directory.entryInfoList(QDir::Dirs);
     QFileInfoList musicFiles=directory.entryInfoList(QDir::Files);
 
     for (int i=2; i<musicDir.size(); i++)
     {
+        /*if (musicDir.at(i).isDir()) {
+            musicDir.append(QDir(musicDir.at(i)).entryInfoList(QDir::))
+        }*/
         musicFiles.append(QDir(musicDir.at(i).absoluteFilePath()).entryInfoList(QDir::Files));
     }
+
     QList<QMediaContent> musicList;
     QMediaContent musicfile;
     for (int i=0; i<musicFiles.size(); i++)
@@ -263,9 +267,7 @@ void MusicPlayer::readyRead()
         {
             QString filename=playlist.media(i).canonicalUrl().toString();
             filename=filename.mid(filename.lastIndexOf("/")+1);
-            qDebug()<<filename;
             for (int j=0; j<titles.size(); ++j) {
-                qDebug()<<titles.at(j);
                 if (filename==titles.at(j)) {
                     currentPlaylist->addMedia(playlist.media(i));
                 }
