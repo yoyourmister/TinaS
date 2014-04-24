@@ -23,7 +23,15 @@ class MusicPlayer : public QWidget
 public:
     explicit MusicPlayer(QWidget *parent = 0);
     ~MusicPlayer();
-    
+
+    enum MsgType{
+        ERROR_LOG,
+        WARNING_LOG,
+        INFO_LOG,
+        SUCCESS_LOG,
+        UNKNOWN_LOG
+    };
+
     bool loadConfigFile();
     bool saveConfigFile();
     void clientConnect(QString hostname);
@@ -56,9 +64,11 @@ private slots:
 
     void on_but_stopDevice_clicked();
 
+    void on_but_showlog_clicked();
+
     //user control of playback
     void on_but_play_clicked();
-    void on_track_doubleclicked(QModelIndex index);
+    void track_doubleclicked(QModelIndex index);
     void on_but_stop_clicked();
     void on_but_next_clicked();
     //void on_trackPositionChanged(int position);
@@ -68,19 +78,22 @@ private slots:
     void updateSongDuration(qint64 length);
     void playerStateChanged(QMediaPlayer::State state);
     void playlistIndexChanged(int index);
+    void curPlaylistIndexChanged();
 
     //general playback
     void on_but_Mute_toggled();
     void on_slider_Volume_valueChanged(int value);
 
 private:
+    void calculateMD5();
     void CreateConnections();
+    void log(QString cat, QString entry, MsgType type = MsgType::UNKNOWN_LOG);
 
     Ui::MusicPlayer *ui;
     QMediaPlayer mediaPlayer;
     QPointer<QAudioDecoder> m_decoder;
     QMediaPlaylist playlist;
-    QMediaPlaylist *currentPlaylist;
+    QMediaPlaylist currentPlaylist;
     QTcpSocket *socket;
     QString IPaddress;
     QHash<QString,int> hashPlaylist;
