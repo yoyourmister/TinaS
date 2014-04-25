@@ -302,6 +302,7 @@ void MusicPlayer::readyRead()
 
     if (readString.left(4)=="play")
     {
+        log("Socket","Recieved: play",MsgType::INFO_LOG);
         QString title=readString.mid(4);
         for (int i=0; i<mediaPlayer.playlist()->mediaCount(); i++)
         {
@@ -316,6 +317,7 @@ void MusicPlayer::readyRead()
     }
 
     if (readString.left(4)=="list") {
+        log("Socket","Recieved: list",MsgType::INFO_LOG);
         QString list=readString.mid(4);
         QStringList titles=list.split(":");
         //currentPlaylist=new QMediaPlaylist();
@@ -337,6 +339,7 @@ void MusicPlayer::readyRead()
     }
 
     if (readString.left(4)=="sync") {
+        log("Socket","Recieved: sync",MsgType::INFO_LOG);
         QStringList properties=readString.mid(4).split(":");
         mediaPlayer.playlist()->setCurrentIndex(properties.at(0).toInt());
         mediaPlayer.setPosition(properties.at(1).toLongLong());
