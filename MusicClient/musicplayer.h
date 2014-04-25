@@ -48,6 +48,10 @@ public slots:
     void finishedPlaying(QAudio::State state);
 
 private slots:
+    void advFieldsCheck();
+
+    void on_but_log2clip_clicked();
+
     void on_but_connect_clicked();
 
     void on_but_addFolder_clicked();

@@ -40,8 +40,29 @@ MusicPlayer::MusicPlayer(QWidget *parent) :
     ui(new Ui::MusicPlayer)
 {
     ui->setupUi(this);
+    //hide logging stuff
     ui->logWidget->hide();
+    ui->check_advancedFields->hide();
+    //hide legend labels of logging
+    ui->label_log_i->hide();
+    ui->label_log_s->hide();
+    ui->label_log_w->hide();
+    ui->label_log_e->hide();
+    ui->label_log_u->hide();
+    //hide unused stuff
+    ui->but_device->hide();
+    ui->box_devices->hide();
+    ui->but_stopDevice->hide();
+    ui->label_audioDevicce->hide();
+    ui->progressBar->hide();
+
+    //hide advanced fields in log window
+    ui->logWidget->hideColumn(0);
+    ui->logWidget->hideColumn(2);
+
+    //creating the manual signal slot connections
     this->CreateConnections();
+
     socket=new QTcpSocket(this);
 
     defaultdir="/home";
@@ -73,6 +94,8 @@ void MusicPlayer::CreateConnections()
     //user control of playback
     connect(ui->list_Tracks, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(track_doubleclicked(QModelIndex)));
     //connect(ui->slider_Playtime, SIGNAL(sliderMoved(int)), this, SLOT(on_trackPositionChanged(sliderMoved(int))));
+    //logging advanced fields checkbox
+    connect(ui->check_advancedFields, SIGNAL(stateChanged(int)), this, SLOT(advFieldsCheck()));
   }
 }
 
@@ -80,6 +103,21 @@ MusicPlayer::~MusicPlayer()
 {
     delete ui;
     delete socket;
+}
+
+void MusicPlayer::advFieldsCheck()
+{
+    if(ui->check_advancedFields->isChecked())
+    {
+        //show advanced fields in log window
+        ui->logWidget->showColumn(0);
+        ui->logWidget->showColumn(2);
+    }else
+    {
+        //hide advanced fields in log window
+        ui->logWidget->hideColumn(0);
+        ui->logWidget->hideColumn(2);
+    }
 }
 
 void MusicPlayer::playlistIndexChanged(int index)
@@ -546,7 +584,7 @@ void MusicPlayer::log(QString cat, QString entry, MsgType type)
     }
 
     //get system time
-    QTableWidgetItem* itemTime = new QTableWidgetItem(QTime::currentTime().toString(tr("hh:mm:ss")));
+    QTableWidgetItem* itemTime = new QTableWidgetItem(QTime::currentTime().toString(tr("hh:mm:ss.zzz")));
     itemTime->setForeground(textColor);
     QTableWidgetItem* itemCat = new QTableWidgetItem(cat);
     itemCat->setForeground(textColor);
@@ -572,8 +610,29 @@ void MusicPlayer::on_but_showlog_clicked()
     if(ui->but_showlog->isChecked())
     {
         ui->logWidget->show();
+        ui->check_advancedFields->show();
+        ui->but_showlog->setText("↓ Log ↓");
+        //show legend labels
+        ui->label_log_i->show();
+        ui->label_log_s->show();
+        ui->label_log_w->show();
+        ui->label_log_e->show();
+        ui->label_log_u->show();
     }else
     {
         ui->logWidget->hide();
+        ui->check_advancedFields->hide();
+        ui->but_showlog->setText("Show Log");
+        //hide legend labels
+        ui->label_log_i->hide();
+        ui->label_log_s->hide();
+        ui->label_log_w->hide();
+        ui->label_log_e->hide();
+        ui->label_log_u->hide();
     }
+}
+
+void MusicPlayer::on_but_log2clip_clicked()
+{
+    //TODO
 }
