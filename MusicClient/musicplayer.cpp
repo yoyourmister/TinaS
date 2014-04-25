@@ -91,6 +91,7 @@ void MusicPlayer::CreateConnections()
     connect(&mediaPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(playerStateChanged(QMediaPlayer::State)));
     connect(&playlist, SIGNAL(currentIndexChanged(int)), this, SLOT(playlistIndexChanged(int)));
     //connect(&currentPlaylist, SIGNAL(currentIndexChanged(int)), this, SLOT(curPlaylistIndexChanged()));
+
     //user control of playback
     connect(ui->list_Tracks, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(track_doubleclicked(QModelIndex)));
     //connect(ui->slider_Playtime, SIGNAL(sliderMoved(int)), this, SLOT(on_trackPositionChanged(sliderMoved(int))));
@@ -147,18 +148,18 @@ void MusicPlayer::curPlaylistIndexChanged()
 
 void MusicPlayer::updateSongDuration(qint64 length)
 {
-    length = qRound(length/1000.0);
+    length = qFloor(length/1000.0);
     ui->slider_Playtime->setRange(0, length);
-    QTime duration(0, length / 60, length % 60);
-    ui->label_Duration->setText(duration.toString(tr("mm:ss")));
+    QTime duration(length / 3600, (length % 3600) / 60, length % 60);
+    ui->label_Duration->setText(duration.toString(tr("hh:mm:ss")));
 }
 
 void MusicPlayer::updatePlaytime(qint64 position)
 {
     position = qRound(position/1000.0);
     ui->slider_Playtime->setValue(position);
-    QTime duration(0, position / 60, position % 60);
-    ui->label_Playtime->setText(duration.toString(tr("mm:ss")));
+    QTime duration(position / 3600, (position % 3600) / 60, position % 60);
+    ui->label_Playtime->setText(duration.toString(tr("hh:mm:ss")));
 }
 
 //void MusicPlayer::on_trackPositionChanged(int position)
@@ -399,7 +400,7 @@ void MusicPlayer::on_but_addFolder_clicked()
         addMusicFile(dir);
         defaultdir=dir;
         saveConfigFile();
-        calculateMD5();
+        //calculateMD5();
     }
 }
 
