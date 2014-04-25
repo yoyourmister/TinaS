@@ -227,19 +227,46 @@ void MusicPlayer::clientConnect(QString hostname)
 
 void MusicPlayer::addMusicFile(QString dir)
 {
+    QStringList dirsList;
     QDir directory = QDir(dir);
-    //filter for mp3/mp4 files only
-    //directory.setNameFilters(QStringList() << "*.avi" << "*.wav" << "*.mp3" << "*.mp4");
-    QFileInfoList musicDir=directory.entryInfoList(QDir::Dirs);
-    QFileInfoList musicFiles=directory.entryInfoList(QDir::Files);
+    log("IO","Scanning directory and subdirectories for music files...",MsgType::INFO_LOG);
+    dirsList << directory.absolutePath();
+    QDirIterator musicDir(directory.absolutePath(), QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
 
-    for (int i=2; i<musicDir.size(); i++)
+    while(musicDir.hasNext())
     {
-        /*if (musicDir.at(i).isDir()) {
-            musicDir.append(QDir(musicDir.at(i)).entryInfoList(QDir::))
-        }*/
-        musicFiles.append(QDir(musicDir.at(i).absoluteFilePath()).entryInfoList(QDir::Files));
+        musicDir.next();
+        dirsList << musicDir.filePath();
     }
+    //filter for specific file extensions only
+    QStringList filters;
+    filters << "*.avi" << "*.wav" << "*.mp3" << "*.mp4";
+    //temp directory
+    QDir innerDir;
+
+    QFileInfoList musicFiles;
+
+    for (int i=0; i<dirsList.size(); ++i)
+    {
+        innerDir = QDir(dirsList.at(i));
+        log("IO","Adding files from "+dirsList.at(i),MsgType::INFO_LOG);
+        innerDir.setNameFilters(filters);
+        musicFiles.append(innerDir.entryInfoList(QDir::Files));
+    }
+
+//    QDir directory = QDir(dir);
+//    //filter for mp3/mp4 files only
+//    //directory.setNameFilters(QStringList() << "*.avi" << "*.wav" << "*.mp3" << "*.mp4");
+//    QFileInfoList musicDir=directory.entryInfoList(QDir::Dirs);
+//    QFileInfoList musicFiles=directory.entryInfoList(QDir::Files);
+
+//    for (int i=2; i<musicDir.size(); i++)
+//    {
+//        /*if (musicDir.at(i).isDir()) {
+//            musicDir.append(QDir(musicDir.at(i)).entryInfoList(QDir::))
+//        }*/
+//        musicFiles.append(QDir(musicDir.at(i).absoluteFilePath()).entryInfoList(QDir::Files));
+//    }
 
     QList<QMediaContent> musicList;
     QMediaContent musicfile;
@@ -249,6 +276,7 @@ void MusicPlayer::addMusicFile(QString dir)
         musicList.append(musicfile);
     }
     playlist.clear();
+    log("MediaPlayer","Playlist: clearing before adding new files...",MsgType::INFO_LOG);
     ui->list_Tracks->clear();
     playlist.setPlaybackMode(QMediaPlaylist::Loop);
     playlist.addMedia(musicList);
