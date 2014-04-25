@@ -167,8 +167,8 @@ void MusicPlayer::clientConnect(QString hostname)
 void MusicPlayer::addMusicFile(QString dir)
 {
     QDir directory = QDir(dir);
-    //filter for mp3/mp4 files only
-    //directory.setNameFilters(QStringList() << "*.avi" << "*.wav" << "*.mp3" << "*.mp4");
+    //filter for audio files
+    //directory.setNameFilters(QStringList() << "*.avi" << "*.wav" << "*.mp3" << "*.mp4" << "*.aac");
     QFileInfoList musicDir=directory.entryInfoList(QDir::Dirs);
     QFileInfoList musicFiles=directory.entryInfoList(QDir::Files);
 
@@ -242,7 +242,7 @@ void MusicPlayer::readyRead()
     QByteArray readbytes=socket->readAll();
     QString readString(readbytes);
     qDebug()<<readbytes;
-    ui->label_debug->setText(readbytes);
+    //ui->label_debug->setText(readbytes);
 
     if (readString.left(4)=="play")
     {
@@ -252,7 +252,6 @@ void MusicPlayer::readyRead()
             QString filename=mediaPlayer.playlist()->media(i).canonicalUrl().toString();
             filename=filename.mid(filename.lastIndexOf("/")+1);
             if (filename.compare(title)==0) {
-                qDebug() << "play" << filename ;
                 mediaPlayer.playlist()->setCurrentIndex(i);
             }
         }
@@ -329,7 +328,9 @@ void MusicPlayer::on_but_play_clicked()
         //the currently selected item will be played next
         int index = ui->list_Tracks->currentIndex().row();
         //if nothing is selected first track is played
-        if (index<0) index = 0;
+        if (index<0) {
+            index = 0;
+        }
         playlist.setCurrentIndex(index);
         mediaPlayer.play();
         ui->but_play->setText("Pause");

@@ -5,6 +5,8 @@
 #include <QTcpSocket>
 #include <QDebug>
 
+//#include "musicserver.h"
+
 class ServerThread : public QThread
 {
     Q_OBJECT
@@ -14,6 +16,10 @@ public:
 
 signals:
     void error(QTcpSocket::SocketError socketerror);
+    void disconnect(int ID);
+    void dataReady(int ID, QByteArray data);
+
+    //void sendSignal(QString data);
 
 public slots:
     void readyRead();
