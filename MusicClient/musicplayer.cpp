@@ -423,7 +423,9 @@ void MusicPlayer::on_but_play_clicked()
         //the currently selected item will be played next
         int index = ui->list_Tracks->currentIndex().row();
         //if nothing is selected first track is played
-        if (index<0) index = 0;
+        if (index<0) {
+            index = 0;
+        }
         playlist.setCurrentIndex(index);
         mediaPlayer.play();
         ui->but_play->setText("Pause");

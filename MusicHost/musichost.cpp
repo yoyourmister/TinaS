@@ -150,3 +150,11 @@ void MusicHost::on_listWidget_playlist_itemDoubleClicked(QListWidgetItem *item)
 {
         delete ui->listWidget_playlist->item(ui->listWidget_playlist->row(item));
 }
+
+void MusicHost::on_but_debug_clicked()
+{
+    if (!musicserver) {
+        return;
+    }
+    musicserver->dumpDebugInfo();
+}

@@ -40,6 +40,8 @@ private slots:
 
     void assignIP(QNetworkReply *reply);
 
+    void on_but_debug_clicked();
+
 private:
     //QHostAddress getLocalIP();
 
