@@ -96,7 +96,7 @@ void MusicHost::on_but_addFolder_clicked()
 {
     //QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),"/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     //addMusicFiles(dir);
-    addMusicFiles("C:/Users/test/Desktop/Musik");
+    addMusicFiles("J:/Musik/DSA Hintergrund");
 }
 
 void MusicHost::addMusicFiles(QString dir)

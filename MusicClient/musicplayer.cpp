@@ -581,7 +581,7 @@ void MusicPlayer::calculateMD5()
         file.setFileName(filename);
         if (file.open(QIODevice::ReadOnly)) {
             hashData = QCryptographicHash::hash(file.readAll(), QCryptographicHash::Md5);
-            log("MD5 Hash",playlist.media(i).canonicalUrl().fileName()+" => "+QString(hashData.toHex()),MsgType::INFO_LOG);
+            //log("MD5 Hash",playlist.media(i).canonicalUrl().fileName()+" => "+QString(hashData.toHex()),MsgType::INFO_LOG);
         }
         file.close();
     }
@@ -648,7 +648,7 @@ void MusicPlayer::on_but_showlog_clicked()
     {
         ui->logWidget->show();
         ui->check_advancedFields->show();
-        ui->but_showlog->setText("↓ Log ↓");
+        //ui->but_showlog->setText("↓ Log ↓");
         //show legend labels
         ui->label_log_i->show();
         ui->label_log_s->show();
