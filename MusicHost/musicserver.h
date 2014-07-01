@@ -21,7 +21,6 @@ public:
 private:
     QList<ServerThread*> threadlist;
 
-
 signals:
     void sendSignal(QString data);
 

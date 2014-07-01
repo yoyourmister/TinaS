@@ -6,11 +6,23 @@ MusicHost::MusicHost(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::MusicHost)
 {
+    musicserver=nullptr;
+    globalPlaylist=nullptr;
+    currentPlaylist=nullptr;
     ui->setupUi(this);
 }
 
 MusicHost::~MusicHost()
 {
+    if (musicserver) {
+        delete musicserver;
+    }
+    if (globalPlaylist) {
+        delete globalPlaylist;
+    }
+    if (currentPlaylist) {
+        delete currentPlaylist;
+    }
     delete ui;
 }
 

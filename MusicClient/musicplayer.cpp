@@ -1,40 +1,6 @@
 #include "musicplayer.h"
 #include "ui_musicplayer.h"
 
-bool MusicPlayer::loadConfigFile() {
-    QString configFile=QDir::currentPath()+"config.ini";
-    QFile file(configFile);
-    if (!file.open(QIODevice::ReadOnly)) {
-        log("IO","Load config file: could not open file",MsgType::WARNING_LOG);
-        return false;
-    }
-    QDataStream in(&file);
-    in.setVersion(QDataStream::Qt_5_1);
-
-    in >> defaultdir;
-
-    file.close();
-    log("IO","Config file loaded",MsgType::SUCCESS_LOG);
-    return true;
-}
-
-bool MusicPlayer::saveConfigFile() {
-    QString configFile=QDir::currentPath()+"config.ini";
-    QFile file(configFile);
-    if (!file.open(QIODevice::WriteOnly)) {
-        log("IO","Save config file: could not open file",MsgType::ERROR_LOG);
-        return false;
-    }
-    QDataStream out(&file);
-    out.setVersion(QDataStream::Qt_5_1);
-
-    out << defaultdir;
-
-    file.close();
-    log("IO","Config file saved",MsgType::SUCCESS_LOG);
-    return true;
-}
-
 MusicPlayer::MusicPlayer(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::MusicPlayer)
@@ -79,6 +45,46 @@ MusicPlayer::MusicPlayer(QWidget *parent) :
     isConnected = false;
 }
 
+MusicPlayer::~MusicPlayer()
+{
+    delete ui;
+    delete socket;
+}
+
+bool MusicPlayer::loadConfigFile() {
+    QString configFile=QDir::currentPath()+"config.ini";
+    QFile file(configFile);
+    if (!file.open(QIODevice::ReadOnly)) {
+        log("IO","Load config file: could not open file",MsgType::WARNING_LOG);
+        return false;
+    }
+    QDataStream in(&file);
+    in.setVersion(QDataStream::Qt_5_1);
+
+    in >> defaultdir;
+
+    file.close();
+    log("IO","Config file loaded",MsgType::SUCCESS_LOG);
+    return true;
+}
+
+bool MusicPlayer::saveConfigFile() {
+    QString configFile=QDir::currentPath()+"config.ini";
+    QFile file(configFile);
+    if (!file.open(QIODevice::WriteOnly)) {
+        log("IO","Save config file: could not open file",MsgType::ERROR_LOG);
+        return false;
+    }
+    QDataStream out(&file);
+    out.setVersion(QDataStream::Qt_5_1);
+
+    out << defaultdir;
+
+    file.close();
+    log("IO","Config file saved",MsgType::SUCCESS_LOG);
+    return true;
+}
+
 void MusicPlayer::CreateConnections()
 {
   if ( ui )
@@ -98,12 +104,6 @@ void MusicPlayer::CreateConnections()
     //logging advanced fields checkbox
     connect(ui->check_advancedFields, SIGNAL(stateChanged(int)), this, SLOT(advFieldsCheck()));
   }
-}
-
-MusicPlayer::~MusicPlayer()
-{
-    delete ui;
-    delete socket;
 }
 
 void MusicPlayer::advFieldsCheck()
@@ -335,7 +335,7 @@ void MusicPlayer::readyRead()
 
     if (readString.left(4)=="play")
     {
-        log("Socket","Recieved: play",MsgType::INFO_LOG);
+        log("Socket","Received: play",MsgType::INFO_LOG);
         QString title=readString.mid(4);
         for (int i=0; i<mediaPlayer.playlist()->mediaCount(); i++)
         {
@@ -350,7 +350,7 @@ void MusicPlayer::readyRead()
     }
 
     if (readString.left(4)=="list") {
-        log("Socket","Recieved: list",MsgType::INFO_LOG);
+        log("Socket","Received: list",MsgType::INFO_LOG);
         QString list=readString.mid(4);
         QStringList titles=list.split(":");
         //currentPlaylist=new QMediaPlaylist();
@@ -384,7 +384,6 @@ void MusicPlayer::on_but_connect_clicked()
 {
     if (isConnected) {
         socket->disconnectFromHost();
-
     } else
     {
         IPaddress=ui->editIP->text();
@@ -673,4 +672,12 @@ void MusicPlayer::on_but_showlog_clicked()
 void MusicPlayer::on_but_log2clip_clicked()
 {
     //TODO
+}
+
+void MusicPlayer::closeEvent(QCloseEvent *event)
+{
+    if (isConnected) {
+        socket->disconnectFromHost();
+    }
+    event->accept();
 }

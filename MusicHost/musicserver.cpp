@@ -55,9 +55,13 @@ void MusicServer::sendSound(QString soundName)
 {
 }
 
+
 void MusicServer::gotData(int ID, QByteArray data)
 {
     qDebug() << ID << " " << data;
+    if (data.left(strlen("client"))=="client") {
+
+    }
     if (data=="resync") {
 
     }

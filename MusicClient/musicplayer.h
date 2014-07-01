@@ -91,7 +91,7 @@ private slots:
 private:
     void calculateMD5();
     void CreateConnections();
-    void log(QString cat, QString entry, MsgType type = MsgType::UNKNOWN_LOG);
+    void log(QString cat, QString entry, MsgType type = UNKNOWN_LOG);
 
     Ui::MusicPlayer *ui;
     QMediaPlayer mediaPlayer;
@@ -107,6 +107,9 @@ private:
     QPointer<QAudioOutput> audioOutput; // class member.
     QString curDeviceName;
     bool isConnected;
+
+protected:
+    void closeEvent(QCloseEvent *event);
 };
 
 #endif // MUSICPLAYER_H
