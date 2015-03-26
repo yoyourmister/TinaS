@@ -1,5 +1,6 @@
 #include "musicplayer.h"
 #include "ui_musicplayer.h"
+#include <QShortcut>
 
 bool MusicPlayer::loadConfigFile() {
     QString configFile=QDir::currentPath()+"config.ini";
@@ -67,7 +68,7 @@ MusicPlayer::MusicPlayer(QWidget *parent) :
 
     defaultdir="/home";
     loadConfigFile();
-    log("Constructor","Default dir: "+defaultdir,MsgType::INFO_LOG);
+    log("Constructor","Default dir: \""+defaultdir+"\"",MsgType::INFO_LOG);
 
     QList<QAudioDeviceInfo> infoList=QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
     foreach(const QAudioDeviceInfo &deviceInfo, infoList) {
@@ -90,12 +91,16 @@ void MusicPlayer::CreateConnections()
     connect(&mediaPlayer, SIGNAL(durationChanged(qint64)), this, SLOT(updateSongDuration(qint64)));
     connect(&mediaPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(playerStateChanged(QMediaPlayer::State)));
     connect(&playlist, SIGNAL(currentIndexChanged(int)), this, SLOT(playlistIndexChanged(int)));
-    //connect(&currentPlaylist, SIGNAL(currentIndexChanged(int)), this, SLOT(curPlaylistIndexChanged()));
+    connect(&currentPlaylist, SIGNAL(currentIndexChanged(int)), this, SLOT(curPlaylistIndexChanged()));
     //user control of playback
     connect(ui->list_Tracks, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(track_doubleclicked(QModelIndex)));
     //connect(ui->slider_Playtime, SIGNAL(sliderMoved(int)), this, SLOT(on_trackPositionChanged(sliderMoved(int))));
     //logging advanced fields checkbox
     connect(ui->check_advancedFields, SIGNAL(stateChanged(int)), this, SLOT(advFieldsCheck()));
+    //pressing DELETE key activates the slots only when list widget has focus
+    QShortcut* shortcut = new QShortcut(QKeySequence(Qt::Key_Delete), ui->list_Tracks);
+    //shortcut->setContext(Qt::WidgetShortcut);
+    connect(shortcut, SIGNAL(activated()), this, SLOT(deletePlaylistItem()));
   }
 }
 
@@ -103,6 +108,49 @@ MusicPlayer::~MusicPlayer()
 {
     delete ui;
     delete socket;
+}
+
+void MusicPlayer::deletePlaylistItem()
+{
+    //removes selected items from playlist and...
+    QModelIndexList deleteList = ui->list_Tracks->selectionModel()->selectedIndexes();
+    QStringList filenames;
+    QModelIndexList::iterator it;
+    QString curFileName;
+    // halt media playback
+    mediaPlayer.stop();
+    for(it = deleteList.begin(); it != deleteList.end(); ++it)
+    {
+        curFileName = playlist.media(it->row()).canonicalUrl().toLocalFile();
+        filenames << curFileName;
+        log("MediaPlayer","delete from playlist index "+QString::number(it->row())+" => \""+curFileName+"\"",MsgType::WARNING_LOG);
+
+    }
+    QStringList::iterator nameIt;
+    QString curItemName;
+    QString curPlaylistName;
+    for(nameIt = filenames.begin(); nameIt != filenames.end(); ++nameIt)
+    {
+        curItemName = (*nameIt).mid((*nameIt).lastIndexOf("/")+1);
+        for(int i = 0; i<playlist.mediaCount(); ++i)
+        {
+            curPlaylistName = playlist.media(i).canonicalUrl().toLocalFile();
+            curPlaylistName = curPlaylistName.mid(curPlaylistName.lastIndexOf("/")+1);
+            if(curPlaylistName==curItemName)
+            {
+                log("MediaPlayer","delete \""+curItemName+"\" from playlist",MsgType::INFO_LOG);
+                playlist.removeMedia(i);
+            }
+        }
+        for(int j = 0; j<ui->list_Tracks->count(); ++j)
+        {
+            if(ui->list_Tracks->item(j)->text()==curItemName)
+            {
+                log("MediaPlayer","delete \""+curItemName+"\" from widget",MsgType::INFO_LOG);
+                ui->list_Tracks->takeItem(j);
+            }
+        }
+    }
 }
 
 void MusicPlayer::advFieldsCheck()
@@ -123,9 +171,11 @@ void MusicPlayer::advFieldsCheck()
 void MusicPlayer::playlistIndexChanged(int index)
 {
     if (ui->list_Tracks->currentRow()!=-1)
+    {
         ui->list_Tracks->currentItem()->setTextColor(QColor("black"));
-    ui->list_Tracks->setCurrentRow(index);
-    ui->list_Tracks->currentItem()->setTextColor(QColor("green"));
+        ui->list_Tracks->setCurrentRow(index);
+        ui->list_Tracks->currentItem()->setTextColor(QColor("green"));
+    }
 }
 
 void MusicPlayer::curPlaylistIndexChanged()
@@ -133,12 +183,15 @@ void MusicPlayer::curPlaylistIndexChanged()
     if (ui->list_Tracks->currentRow()!=-1)
         ui->list_Tracks->currentItem()->setTextColor(QColor("black"));
     // kinda brute force... if songs have same name we have a problem else this works fine :)
-    QString currentItemName = ui->list_Tracks->currentItem()->text();
+    QString filename = currentPlaylist.currentMedia().canonicalUrl().toString();
+    QString currentItemName = filename.mid(filename.lastIndexOf("/")+1);
+    //QString currentItemName = ui->list_Tracks->currentItem()->text();
     int listWidgetSize = ui->list_Tracks->count();
     for (int k = 0; k < listWidgetSize; ++k)
     {
-        if (ui->list_Tracks->item(k)->text().startsWith(currentItemName))
+        if (ui->list_Tracks->item(k)->text() == currentItemName)
         {
+            log("MediaPlayer","curPlaylist changed to: \""+currentItemName+"\"",MsgType::INFO_LOG);
             ui->list_Tracks->setCurrentRow(k);
             ui->list_Tracks->currentItem()->setTextColor(QColor("green"));
         }
@@ -240,7 +293,7 @@ void MusicPlayer::addMusicFile(QString dir)
     }
     //filter for specific file extensions only
     QStringList filters;
-    filters << "*.avi" << "*.wav" << "*.mp3" << "*.mp4" << "*.aac";
+    filters << "*.avi" << "*.wav" << "*.mp3" << "*.mp4" << "*.aac" << "*.m4a";
     //temp directory
     QDir innerDir;
 
@@ -249,24 +302,10 @@ void MusicPlayer::addMusicFile(QString dir)
     for (int i=0; i<dirsList.size(); ++i)
     {
         innerDir = QDir(dirsList.at(i));
-        log("IO","Adding files from "+dirsList.at(i),MsgType::INFO_LOG);
+        log("IO","Adding files from \""+dirsList.at(i)+"\"",MsgType::INFO_LOG);
         innerDir.setNameFilters(filters);
         musicFiles.append(innerDir.entryInfoList(QDir::Files));
     }
-
-//    QDir directory = QDir(dir);
-//    //filter for mp3/mp4 files only
-//    //directory.setNameFilters(QStringList() << "*.avi" << "*.wav" << "*.mp3" << "*.mp4");
-//    QFileInfoList musicDir=directory.entryInfoList(QDir::Dirs);
-//    QFileInfoList musicFiles=directory.entryInfoList(QDir::Files);
-
-//    for (int i=2; i<musicDir.size(); i++)
-//    {
-//        /*if (musicDir.at(i).isDir()) {
-//            musicDir.append(QDir(musicDir.at(i)).entryInfoList(QDir::))
-//        }*/
-//        musicFiles.append(QDir(musicDir.at(i).absoluteFilePath()).entryInfoList(QDir::Files));
-//    }
 
     QList<QMediaContent> musicList;
     QMediaContent musicfile;
@@ -285,7 +324,7 @@ void MusicPlayer::addMusicFile(QString dir)
         QString filename=playlist.media(i).canonicalUrl().toString();
         filename=filename.mid(filename.lastIndexOf("/")+1);
         ui->list_Tracks->addItem(filename);
-        log("MediaPlayer","Add to list: "+QString::number(i)+" "+filename,MsgType::INFO_LOG);
+        log("MediaPlayer","Add to list: "+QString::number(i)+" \""+filename+"\"",MsgType::INFO_LOG);
     }
     mediaPlayer.setPlaylist(&playlist);
 
@@ -341,7 +380,7 @@ void MusicPlayer::readyRead()
             QString filename=mediaPlayer.playlist()->media(i).canonicalUrl().toString();
             filename=filename.mid(filename.lastIndexOf("/")+1);
             if (filename.compare(title)==0) {
-                log("MediaPlayer","Play: "+filename,MsgType::INFO_LOG);
+                log("MediaPlayer","Play: \""+filename+"\"",MsgType::INFO_LOG);
                 mediaPlayer.playlist()->setCurrentIndex(i);
             }
         }
@@ -358,9 +397,8 @@ void MusicPlayer::readyRead()
         {
             QString filename=playlist.media(i).canonicalUrl().toString();
             filename=filename.mid(filename.lastIndexOf("/")+1);
-            log("MediaPlayer","Playlist filename: "+filename,MsgType::INFO_LOG);
+            log("MediaPlayer","Playlist filename: \""+filename+"\"",MsgType::INFO_LOG);
             for (int j=0; j<titles.size(); ++j) {
-                log("MediaPlayer","Current playlist add: "+titles.at(j),MsgType::INFO_LOG);
                 if (filename==titles.at(j)) {
                     currentPlaylist.addMedia(playlist.media(i));
                 }
@@ -394,12 +432,12 @@ void MusicPlayer::on_but_connect_clicked()
 void MusicPlayer::on_but_addFolder_clicked()
 {
     QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),defaultdir, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    log("IO","AddFolder: "+dir,MsgType::INFO_LOG);
+    log("IO","AddFolder: \""+dir+"\"",MsgType::INFO_LOG);
     if (dir!="") {
         addMusicFile(dir);
         defaultdir=dir;
         saveConfigFile();
-        calculateMD5();
+        //calculateMD5();
     }
 }
 
@@ -488,7 +526,7 @@ void MusicPlayer::decode()
     connect(m_decoder,SIGNAL(finished()),this,SLOT(decodeFinished()));
     //decoder->setSourceFilename("J:/Musik/Snap - Oops Up.mp3");
     QString musicfile=QDir::currentPath()+"/Erdenstern - Snow Queen.mp3";  //"/Snap - Oops Up.mp3";//
-    log("Decoder","File: "+musicfile,MsgType::INFO_LOG);
+    log("Decoder","File: \""+musicfile+"\"",MsgType::INFO_LOG);
     m_decoder->setSourceFilename(musicfile);
     m_decoder->start();
     log("Decoder","Decode started",MsgType::INFO_LOG);
@@ -581,7 +619,7 @@ void MusicPlayer::calculateMD5()
         file.setFileName(filename);
         if (file.open(QIODevice::ReadOnly)) {
             hashData = QCryptographicHash::hash(file.readAll(), QCryptographicHash::Md5);
-            log("MD5 Hash",playlist.media(i).canonicalUrl().fileName()+" => "+QString(hashData.toHex()),MsgType::INFO_LOG);
+            log("MD5 Hash","\""+playlist.media(i).canonicalUrl().fileName()+"\" => "+QString(hashData.toHex()),MsgType::INFO_LOG);
         }
         file.close();
     }

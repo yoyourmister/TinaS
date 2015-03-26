@@ -18,11 +18,8 @@
     <layout class="QGridLayout" name="gridLayout">
      <item row="2" column="0" rowspan="2" colspan="5">
       <widget class="QTableWidget" name="logWidget">
-       <property name="sizeAdjustPolicy">
-        <enum>QAbstractScrollArea::AdjustIgnored</enum>
-       </property>
        <attribute name="horizontalHeaderVisible">
-        <bool>false</bool>
+        <bool>true</bool>
        </attribute>
        <attribute name="horizontalHeaderCascadingSectionResizes">
         <bool>false</bool>
@@ -298,6 +295,24 @@
        </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Current playlist&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="dragEnabled">
+        <bool>false</bool>
+       </property>
+       <property name="dragDropMode">
+        <enum>QAbstractItemView::NoDragDrop</enum>
+       </property>
+       <property name="defaultDropAction">
+        <enum>Qt::IgnoreAction</enum>
+       </property>
+       <property name="alternatingRowColors">
+        <bool>true</bool>
+       </property>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::ExtendedSelection</enum>
+       </property>
+       <property name="sortingEnabled">
+        <bool>false</bool>
        </property>
       </widget>
      </item>

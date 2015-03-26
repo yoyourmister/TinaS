@@ -48,6 +48,8 @@ public slots:
     void finishedPlaying(QAudio::State state);
 
 private slots:
+    void deletePlaylistItem();
+
     void advFieldsCheck();
 
     void on_but_log2clip_clicked();
