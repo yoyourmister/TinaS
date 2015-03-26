@@ -22,18 +22,18 @@ void MusicServer::startServer()
 }
 
 void MusicServer::dumpDebugInfo() {
-    host->log("Server","Thread list size: " + threadlist.size(), MusicHost::MsgType::INFO_LOG);
+    host->log("Server","Thread list size: " + QString::number(threadlist.size()), MusicHost::MsgType::INFO_LOG);
     //qDebug()<<"Info: "<<threadlist.size();
     for (int i=0; i<threadlist.size(); i++)
     {
-        host->log("Server","Socket descriptor: " + threadlist.at(i)->socketDescriptor, MusicHost::MsgType::INFO_LOG);
+        host->log("Server","Socket descriptor: " + QString::number(threadlist.at(i)->socketDescriptor), MusicHost::MsgType::INFO_LOG);
         //qDebug()<<threadlist.at(i)->socketDescriptor;//<<" "<<threadlist.at(i)->isRunning();//<<" "<<threadlist.at(i)->isFinished();
     }
 }
 
 void MusicServer::sendPlaylist(QList<QString> songNames)
 {
-    host->log("Server","Send List... threadlistSize: " + threadlist.size(), MusicHost::MsgType::INFO_LOG);
+    host->log("Server","Send List... thread list Size: " + QString::number(threadlist.size()), MusicHost::MsgType::INFO_LOG);
     //qDebug()<<"Send List... threadlistSize:"<<threadlist.size();
     QString sendList="list";
     for (int i=0; i<songNames.size(); ++i) {
@@ -41,7 +41,7 @@ void MusicServer::sendPlaylist(QList<QString> songNames)
     }
     for (int i=0; i<threadlist.size(); i++)
     {
-        host->log("Server","Send List to " + threadlist.at(i)->socketDescriptor, MusicHost::MsgType::INFO_LOG);
+        host->log("Server","Send List to " + QString::number(threadlist.at(i)->socketDescriptor), MusicHost::MsgType::INFO_LOG);
         //qDebug()<<"Send List to"<<threadlist.at(i)->socketDescriptor;
         emit sendSignal(sendList);
         //threadlist.at(i)->sendData(sendList);
@@ -98,7 +98,7 @@ void MusicServer::disconnectConnection(int ID)
         if (threadlist.at(i)->socketDescriptor==ID) {
             //threadlist.at(i)->deleteLater();
             threadlist.removeAt(i);
-            host->log("Server", "removed: " + i, MusicHost::MsgType::INFO_LOG);
+            host->log("Server", "removed: " + QString::number(i), MusicHost::MsgType::INFO_LOG);
             //qDebug()<<"removed: "<<i;
         }
     }
@@ -108,7 +108,7 @@ void MusicServer::disconnectConnection(int ID)
 
 void MusicServer::incomingConnection(int socketDescriptor)
 {
-    host->log("Server", "Connecting..." + socketDescriptor, MusicHost::MsgType::INFO_LOG);
+    host->log("Server", "Connecting..." + QString::number(socketDescriptor), MusicHost::MsgType::INFO_LOG);
     //qDebug() << "Connecting..." << socketDescriptor;
     ServerThread *thread = new ServerThread(socketDescriptor, this);
     threadlist.append(thread);

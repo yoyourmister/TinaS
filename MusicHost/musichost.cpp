@@ -199,7 +199,7 @@ void MusicHost::on_but_removeFromList_clicked()
             log("Client playlist","Removing \"" + list.at(i)->text() + "\"",MsgType::INFO_LOG);
             ui->listWidget_playlist->takeItem(ui->listWidget_playlist->row(list.at(i)));
         }
-        log("Client playlist",list.size() + " titles removed",MsgType::INFO_LOG);
+        log("Client playlist", QString::number(list.size()) + " titles removed",MsgType::INFO_LOG);
     } else {
         log("Client playlist","No files selected to remove",MsgType::WARNING_LOG);
     }
