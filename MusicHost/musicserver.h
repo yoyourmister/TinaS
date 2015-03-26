@@ -6,6 +6,8 @@
 #include <QDebug>
 #include "serverthread.h"
 
+class MusicHost;
+
 class MusicServer : public QTcpServer
 {
     Q_OBJECT
@@ -15,11 +17,13 @@ public:
     void sendPlaylist(QList<QString> songNames);
     void sendSong(QString songName);
     void sendSound(QString soundName);
+    void sendMessage(QString message);
 
     void dumpDebugInfo();
 
 private:
     QList<ServerThread*> threadlist;
+    MusicHost* host;
 
 
 signals:

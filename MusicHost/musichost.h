@@ -28,6 +28,8 @@ public:
         UNKNOWN_LOG
     };
 
+    void log(QString cat, QString entry, MsgType type = MsgType::UNKNOWN_LOG);
+
 private slots:
     void on_but_host_clicked();
 
@@ -55,7 +57,6 @@ private slots:
 
 private:
     //QHostAddress getLocalIP();
-    void log(QString cat, QString entry, MsgType type = MsgType::UNKNOWN_LOG);
     void CreateConnections();
 
     Ui::MusicHost *ui;

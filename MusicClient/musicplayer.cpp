@@ -370,7 +370,7 @@ void MusicPlayer::readyRead()
     QByteArray readbytes=socket->readAll();
     QString readString(readbytes);
     log("Socket",QString(readbytes),MsgType::INFO_LOG);
-
+    log("Socket","String: " + readString.left(4), MsgType::INFO_LOG);
     if (readString.left(4)=="play")
     {
         log("Socket","Recieved: play",MsgType::INFO_LOG);
@@ -413,6 +413,11 @@ void MusicPlayer::readyRead()
         QStringList properties=readString.mid(4).split(":");
         mediaPlayer.playlist()->setCurrentIndex(properties.at(0).toInt());
         mediaPlayer.setPosition(properties.at(1).toLongLong());
+    }
+
+    if (readString.left(4)=="mesg")
+    {
+        log("Socket","Message from Host: " + readString,MsgType::INFO_LOG);
     }
 
 }

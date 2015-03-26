@@ -232,6 +232,7 @@ void MusicHost::advFieldsCheck()
         ui->logWidget->hideColumn(0);
         ui->logWidget->hideColumn(2);
     }
+    musicserver->sendMessage("AdvancedFieldsClicked test message");
 }
 
 void MusicHost::log(QString cat, QString entry, MsgType type)
