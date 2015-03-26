@@ -3,8 +3,12 @@
 #################
 *.pro
 *.pro.user
-*.pro.user.2.7pre1
+*.pro.user.*
 
+# Build results
+
+build-MusicClient-Desktop*
+build-MusicHost-Desktop*
 
 #################
 ## Eclipse
