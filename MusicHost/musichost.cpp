@@ -86,6 +86,7 @@ void MusicHost::assignIP(QNetworkReply *reply)
 
 void MusicHost::on_but_sendList_clicked()
 {
+    qDebug()<<"Send List clicked";
     QList<QString> list;
     int size=ui->listWidget_playlist->count();
     for (int i=0; i<size; ++i) {
@@ -96,7 +97,12 @@ void MusicHost::on_but_sendList_clicked()
         }
 
     }
-    musicserver->sendPlaylist(list);
+    if (musicserver) {
+        musicserver->sendPlaylist(list);
+    } else {
+        qDebug()<<"Music Server not started";
+    }
+
 }
 
 void MusicHost::on_but_sendSound_clicked()

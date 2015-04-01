@@ -6,11 +6,9 @@ ServerThread::ServerThread(int ID, QObject *parent) :
     QThread(parent)
 {
     this->socketDescriptor=ID;
-}
 
-void ServerThread::run()
-{
-    qDebug()<<"Starting thread" << socketDescriptor;
+    qDebug()<<"Create Socket";
+
     socket=new QTcpSocket();
 
     if (!socket->setSocketDescriptor(this->socketDescriptor))
@@ -20,12 +18,17 @@ void ServerThread::run()
         return;
     }
 
-    connect(socket, SIGNAL(readyRead()),this,SLOT(readyRead()),Qt::DirectConnection);
-    connect(socket, SIGNAL(disconnected()),this,SLOT(disconnected()),Qt::DirectConnection);
+    connect(socket, SIGNAL(readyRead()),    this, SLOT(readyRead()),    Qt::QueuedConnection);
+    connect(socket, SIGNAL(disconnected()), this, SLOT(disconnected()), Qt::QueuedConnection);
     //connect(this, SIGNAL(sendSignal(QString)), this, SLOT(sendData(QString)), Qt::DirectConnection);
 
-    qDebug()<<"Socket connected" << socketDescriptor;
+    qDebug()<<"Socket Signals connected" << socketDescriptor;
 
+}
+
+void ServerThread::run()
+{
+    qDebug()<<"Starting thread" << socketDescriptor;
     exec();
 }
 

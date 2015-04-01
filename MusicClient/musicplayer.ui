@@ -353,6 +353,12 @@
      </item>
      <item row="0" column="4">
       <widget class="QLineEdit" name="lineEdit_2">
+       <property name="toolTip">
+        <string>Password for Server</string>
+       </property>
+       <property name="maxLength">
+        <number>32</number>
+       </property>
        <property name="placeholderText">
         <string>Server Password</string>
        </property>
@@ -360,6 +366,12 @@
      </item>
      <item row="0" column="3">
       <widget class="QLineEdit" name="lineEdit">
+       <property name="toolTip">
+        <string>Username</string>
+       </property>
+       <property name="maxLength">
+        <number>32</number>
+       </property>
        <property name="placeholderText">
         <string>Username</string>
        </property>

@@ -241,7 +241,7 @@ void MusicPlayer::addMusicFile(QString dir)
     }
     //filter for specific file extensions only
     QStringList filters;
-    filters << "*.avi" << "*.wav" << "*.mp3" << "*.mp4" << "*.aac";
+    filters << "*.avi" << "*.wav" << "*.mp3" << "*.mp4" << "*.aac" << "*.m4a";
     //temp directory
     QDir innerDir;
 

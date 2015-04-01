@@ -10,10 +10,12 @@ void MusicServer::startServer()
     if(!this->listen(QHostAddress::Any,7777))
     {
         qDebug()<<"Could not start Server";
+        hosting=false;
     }
     else
     {
         qDebug()<<"Listening...";
+        hosting=true;
     }
 }
 
@@ -27,23 +29,30 @@ void MusicServer::dumpDebugInfo() {
 
 void MusicServer::sendPlaylist(QList<QString> songNames)
 {
+    if (!hosting) {
+        qDebug()<<"Host not active";
+        return;
+    }
     qDebug()<<"Send List... threadlistSize:"<<threadlist.size();
     QString sendList="list";
     for (int i=0; i<songNames.size(); ++i) {
         sendList.append(songNames.at(i));
     }
-    for (int i=0; i<threadlist.size(); i++)
-    {
-        qDebug()<<"Send List to"<<threadlist.at(i)->socketDescriptor;
+    //for (int i=0; i<threadlist.size(); i++)
+    //{
+        qDebug()<<"Send List to";//<<threadlist.at(i)->socketDescriptor;
         emit sendSignal(sendList);
         //threadlist.at(i)->sendData(sendList);
-
-    }
+    //}
     qDebug()<<"List sent!";
 }
 
 void MusicServer::sendSong(QString songName)
 {
+    if (!hosting) {
+        qDebug()<<"Host not active";
+        return;
+    }
     qDebug()<<"Send Song...";
     for (int i=0; i<threadlist.size(); i++)
     {
@@ -78,6 +87,7 @@ void MusicServer::disconnectConnection(int ID)
     for (int i=0; i<threadlist.size(); ++i) {
         if (threadlist.at(i)->socketDescriptor==ID) {
             //threadlist.at(i)->deleteLater();
+            threadlist.at(i)->exit();
             threadlist.removeAt(i);
             qDebug()<<"removed: "<<i;
         }
