@@ -20,6 +20,7 @@ ServerThread::ServerThread(int ID, QObject *parent) :
 
     connect(socket, SIGNAL(readyRead()),    this, SLOT(readyRead()),    Qt::QueuedConnection);
     connect(socket, SIGNAL(disconnected()), this, SLOT(disconnected()), Qt::QueuedConnection);
+    //TODO connect(socket, SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWritten(qint64)), Qt::QueuedConnection);
     //connect(this, SIGNAL(sendSignal(QString)), this, SLOT(sendData(QString)), Qt::DirectConnection);
 
     qDebug()<<"Socket Signals connected" << socketDescriptor;
@@ -60,11 +61,11 @@ void ServerThread::disconnected()
 
 void ServerThread::sendData(QString data)
 {
-    if (!socket)
+    if (!socket || socket->state()!=QAbstractSocket::ConnectedState)
     {
         return;
     }
     qDebug()<<"writing to " << socketDescriptor << ": " << data;
-    socket->write(data.toUtf8());
-    qDebug()<<"written!";
+    qDebug()<<"written bytes:" << socket->write(data.toUtf8());
+    socket->waitForBytesWritten();
 }

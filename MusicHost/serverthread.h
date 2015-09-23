@@ -25,6 +25,7 @@ public slots:
     void readyRead();
     void disconnected();
     void sendData(QString data);
+    //TODO void bytesWritten(qint64 size);
 
 private:
     QTcpSocket *socket;

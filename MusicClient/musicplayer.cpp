@@ -96,7 +96,7 @@ void MusicPlayer::CreateConnections()
     connect(&mediaPlayer, SIGNAL(durationChanged(qint64)), this, SLOT(updateSongDuration(qint64)));
     connect(&mediaPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(playerStateChanged(QMediaPlayer::State)));
     connect(&playlist, SIGNAL(currentIndexChanged(int)), this, SLOT(playlistIndexChanged(int)));
-    //connect(&currentPlaylist, SIGNAL(currentIndexChanged(int)), this, SLOT(curPlaylistIndexChanged()));
+    connect(&currentPlaylist, SIGNAL(currentIndexChanged(int)), this, SLOT(curPlaylistIndexChanged(int)));
 
     //user control of playback
     connect(ui->list_Tracks, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(track_doubleclicked(QModelIndex)));
@@ -127,23 +127,19 @@ void MusicPlayer::playlistIndexChanged(int index)
         ui->list_Tracks->currentItem()->setTextColor(QColor("black"));
     ui->list_Tracks->setCurrentRow(index);
     ui->list_Tracks->currentItem()->setTextColor(QColor("green"));
+    log("MediaPlayer","Playlist changed"+QString::number(index));
 }
 
-void MusicPlayer::curPlaylistIndexChanged()
+void MusicPlayer::curPlaylistIndexChanged(int index)
 {
     if (ui->list_Tracks->currentRow()!=-1)
         ui->list_Tracks->currentItem()->setTextColor(QColor("black"));
-    // kinda brute force... if songs have same name we have a problem else this works fine :)
-    QString currentItemName = ui->list_Tracks->currentItem()->text();
-    int listWidgetSize = ui->list_Tracks->count();
-    for (int k = 0; k < listWidgetSize; ++k)
-    {
-        if (ui->list_Tracks->item(k)->text().startsWith(currentItemName))
-        {
-            ui->list_Tracks->setCurrentRow(k);
-            ui->list_Tracks->currentItem()->setTextColor(QColor("green"));
-        }
-    }
+
+    QString curMediaName=currentPlaylist.currentMedia().canonicalUrl().toString();
+    curMediaName=curMediaName.mid(curMediaName.lastIndexOf("/")+1);
+    ui->list_Tracks->setCurrentRow(hashPlaylist[curMediaName]);
+    ui->list_Tracks->currentItem()->setTextColor(QColor("green"));
+    log("MediaPlayer","CurPlaylist changed"+curMediaName,MsgType::INFO_LOG);
 }
 
 void MusicPlayer::updateSongDuration(qint64 length)
@@ -187,7 +183,7 @@ void MusicPlayer::on_slider_Volume_valueChanged(int value)
 {
     mediaPlayer.setVolume(value);
     ui->label_Volume->setText(QString::number(value));
-    log("MediaPlayer","Volume changed: "+QString::number(mediaPlayer.volume()),MsgType::INFO_LOG);
+    //log("MediaPlayer","Volume changed: "+QString::number(mediaPlayer.volume()),MsgType::INFO_LOG);
 }
 
 void MusicPlayer::on_but_Mute_toggled()
@@ -286,8 +282,10 @@ void MusicPlayer::addMusicFile(QString dir)
         QString filename=playlist.media(i).canonicalUrl().toString();
         filename=filename.mid(filename.lastIndexOf("/")+1);
         ui->list_Tracks->addItem(filename);
-        log("MediaPlayer","Add to list: "+QString::number(i)+" "+filename,MsgType::INFO_LOG);
+        hashPlaylist.insert(filename, i);
+        //log("MediaPlayer","Add to list: "+QString::number(i)+" "+filename,MsgType::INFO_LOG);
     }
+    log("MediaPlayer","Added "+QString::number(playlist.mediaCount())+" files to list ",MsgType::INFO_LOG);
     mediaPlayer.setPlaylist(&playlist);
 
 }
@@ -355,18 +353,23 @@ void MusicPlayer::readyRead()
         QStringList titles=list.split(":");
         //currentPlaylist=new QMediaPlaylist();
         currentPlaylist.clear();
-        for (int i=0; i<playlist.mediaCount(); i++)
+        for (int j=0; j<titles.size(); ++j) {
+            int pos=hashPlaylist[titles.at(j)];
+            currentPlaylist.addMedia(playlist.media(pos));
+            log("MediaPlayer","Current playlist add: "+playlist.media(pos).canonicalUrl().toString(),MsgType::INFO_LOG);
+        }
+        /*for (int i=0; i<playlist.mediaCount(); i++)
         {
             QString filename=playlist.media(i).canonicalUrl().toString();
             filename=filename.mid(filename.lastIndexOf("/")+1);
-            log("MediaPlayer","Playlist filename: "+filename,MsgType::INFO_LOG);
+            //log("MediaPlayer","Playlist filename: "+filename,MsgType::INFO_LOG);
             for (int j=0; j<titles.size(); ++j) {
-                log("MediaPlayer","Current playlist add: "+titles.at(j),MsgType::INFO_LOG);
                 if (filename==titles.at(j)) {
+                    log("MediaPlayer","Current playlist add: "+titles.at(j),MsgType::INFO_LOG);
                     currentPlaylist.addMedia(playlist.media(i));
                 }
             }
-        }
+        }*/
         mediaPlayer.setPlaylist(&currentPlaylist);
         mediaPlayer.play();
     }
@@ -384,7 +387,8 @@ void MusicPlayer::on_but_connect_clicked()
 {
     if (isConnected) {
         socket->disconnectFromHost();
-    } else
+    }
+    else
     {
         IPaddress=ui->editIP->text();
         clientConnect(IPaddress);
@@ -393,13 +397,21 @@ void MusicPlayer::on_but_connect_clicked()
 
 void MusicPlayer::on_but_addFolder_clicked()
 {
-    QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),defaultdir, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    log("IO","AddFolder: "+dir,MsgType::INFO_LOG);
-    if (dir!="") {
-        addMusicFile(dir);
-        defaultdir=dir;
-        saveConfigFile();
-        //calculateMD5();
+    if (ui->check_chooseNewFolder->isChecked()) {
+        QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),defaultdir, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+        log("IO","AddFolder: "+dir,MsgType::INFO_LOG);
+        if (dir!="") {
+            addMusicFile(dir);
+            defaultdir=dir;
+            saveConfigFile();
+            //calculateMD5();
+        }
+    } else {
+        log("IO","AddFolder: "+defaultdir,MsgType::INFO_LOG);
+        if (defaultdir!="") {
+            addMusicFile(defaultdir);
+            //calculateMD5();
+        }
     }
 }
 
@@ -449,6 +461,10 @@ void MusicPlayer::on_but_resync_clicked()
 }
 
 
+/*
+ *Decoding Stuff below here
+ *For Test puposes to choose outputdevice
+ */
 
 //QAudioDecoder *decoder;
 QAudioOutput *audioOutput;
@@ -567,6 +583,11 @@ void MusicPlayer::on_but_stopDevice_clicked()
     ui->but_device->setEnabled(true);
     ui->box_devices->setEnabled(true);
 }
+
+
+/*
+ *Decoding Stuff ends here
+ */
 
 //just a simple test method
 void MusicPlayer::calculateMD5()

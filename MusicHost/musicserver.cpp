@@ -90,6 +90,8 @@ void MusicServer::disconnectConnection(int ID)
             threadlist.at(i)->exit();
             threadlist.removeAt(i);
             qDebug()<<"removed: "<<i;
+            emit clientConnection(ID,true);
+            break;
         }
     }
     dumpDebugInfo();
@@ -106,5 +108,6 @@ void MusicServer::incomingConnection(int socketDescriptor)
     connect(thread, SIGNAL(disconnect(int)), this, SLOT(disconnectConnection(int)));
     connect(thread, SIGNAL(dataReady(int,QByteArray)), this, SLOT(gotData(int, QByteArray)));
     connect(this, SIGNAL(sendSignal(QString)), thread, SLOT(sendData(QString)));
+    emit clientConnection(socketDescriptor,false);
     thread->start();
 }

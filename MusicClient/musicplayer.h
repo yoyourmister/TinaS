@@ -82,7 +82,7 @@ private slots:
     void updateSongDuration(qint64 length);
     void playerStateChanged(QMediaPlayer::State state);
     void playlistIndexChanged(int index);
-    void curPlaylistIndexChanged();
+    void curPlaylistIndexChanged(int index);
 
     //general playback
     void on_but_Mute_toggled();

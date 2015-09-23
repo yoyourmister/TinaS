@@ -5,6 +5,7 @@
 #include <QtMultimedia>
 #include <QFileInfoList>
 #include <QListWidget>
+#include <QFileDialog>
 
 #include "musicserver.h"
 
@@ -41,6 +42,10 @@ private slots:
     void assignIP(QNetworkReply *reply);
 
     void on_but_debug_clicked();
+
+    void on_but_clearSelection_clicked();
+
+    void clientConnection(int descriptor, bool disconnect);
 
 private:
     //QHostAddress getLocalIP();

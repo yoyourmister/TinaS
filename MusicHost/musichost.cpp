@@ -30,6 +30,24 @@ void MusicHost::on_but_host_clicked()
 {
     musicserver=new MusicServer(this);
     musicserver->startServer();
+    connect(musicserver, SIGNAL(clientConnection(int, bool)), this, SLOT(clientConnection(int, bool)));
+}
+
+void MusicHost::clientConnection(int descriptor, bool disconnect)
+{
+    if (disconnect) {
+        int count=ui->listWidget_Clients->count();
+        for (int i=0; i<count; ++i) {
+            if (ui->listWidget_Clients->item(i)->text()==QString::number(descriptor)) {
+                ui->listWidget_Clients->takeItem(i);
+                break;
+            }
+        }
+    }
+    else
+    {
+        ui->listWidget_Clients->addItem(QString::number(descriptor));
+    }
 }
 
 void MusicHost::on_but_getIP_clicked()
@@ -112,9 +130,12 @@ void MusicHost::on_but_sendSound_clicked()
 
 void MusicHost::on_but_addFolder_clicked()
 {
-    //QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),"/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    //addMusicFiles(dir);
-    addMusicFiles("J:/Musik/DSA Hintergrund");
+    if (ui->check_ChooseNewFolder->isChecked()) {
+        QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),"/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+        addMusicFiles(dir);
+    } else {
+        addMusicFiles("J:/Musik/DSA Hintergrund");
+    }
 }
 
 void MusicHost::addMusicFiles(QString dir)
@@ -175,4 +196,9 @@ void MusicHost::on_but_debug_clicked()
         return;
     }
     musicserver->dumpDebugInfo();
+}
+
+void MusicHost::on_but_clearSelection_clicked()
+{
+    ui->listWidget_allSongs->clearSelection();
 }

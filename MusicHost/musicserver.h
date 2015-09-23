@@ -25,6 +25,7 @@ private:
 
 signals:
     void sendSignal(QString data);
+    void clientConnection(int descriptor, bool disconnect);
 
 public slots:
     void gotData(int ID, QByteArray data);

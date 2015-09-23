@@ -78,6 +78,13 @@
          </property>
         </spacer>
        </item>
+       <item>
+        <widget class="QPushButton" name="but_clearSelection">
+         <property name="text">
+          <string>Clear Selection</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
      <item row="2" column="0" rowspan="2">
@@ -98,7 +105,7 @@
        <item>
         <widget class="QListWidget" name="listWidget_allSongs">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -112,7 +119,14 @@
         </widget>
        </item>
        <item>
-        <widget class="QListWidget" name="listWidget_Clients"/>
+        <widget class="QListWidget" name="listWidget_Clients">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -138,6 +152,13 @@
          </property>
          <property name="text">
           <string>Add Folder</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="check_ChooseNewFolder">
+         <property name="text">
+          <string>Choose New</string>
          </property>
         </widget>
        </item>
